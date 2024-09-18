@@ -12,7 +12,6 @@ import Button1 from "@/shared/components/Button/Button1";
 import background from "./assets/images/simple_background.png";
 
 const Container = styled.div`
-  /* background-color: #563e7c; */
   height: 100vh;
   display: flex;
   justify-content: center;

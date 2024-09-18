@@ -61,10 +61,8 @@ const regex = /^-?\d+(\.\d+)?$/;
 const moneyRegex = /^(?=.*\d)\d*(?:\.\d*)?$/;
 
 export default function VariantDetailPopUp({ action, state, setState }) {
-  const [salePrice, setSalePrice] = useState(state.sellPrice);
-  const [comparePrice, setComparePrice] = useState(state.comparePrice);
-  const [costPerItem, setCostPerItem] = useState(state.beginFund);
-  const [stock, setStock] = useState(state.inventory);
+  const [salePrice, setSalePrice] = useState(state.realPrice);
+  const [comparePrice, setComparePrice] = useState(state.fakePrice);
 
   return (
     <StyledPopUp action={() => {}}>
@@ -97,26 +95,13 @@ export default function VariantDetailPopUp({ action, state, setState }) {
             }}
           />
         </div>
-        <div>
-          <h4>Stock</h4>
-          <TextInput
-            placeholder={"0"}
-            state={stock}
-            setState={(value) => {
-              if (regex.test(value) || value == "") {
-                setStock(value);
-              }
-            }}
-          />
-        </div>
       </Content>
       <hr />
       <Button>
         <button
           onClick={() => {
-            state.sellPrice = salePrice ? salePrice : 0;
-            state.comparePrice = comparePrice ? comparePrice : 0;
-            state.inventory = stock ? stock : 0;
+            state.realPrice = salePrice ? salePrice : 0;
+            state.fakePrice = comparePrice ? comparePrice : 0;
             setState();
             action();
           }}

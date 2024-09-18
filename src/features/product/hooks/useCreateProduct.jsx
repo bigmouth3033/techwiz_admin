@@ -40,7 +40,7 @@ export default function useCreateProductReducer() {
     roomFuncion: null,
     description: "",
     images: [],
-    variants: [1, 2],
+    variants: [1],
     variant_detail: [],
     active: true,
   });

@@ -13,9 +13,13 @@ import useCreateProductReducer from "./hooks/useCreateProduct";
 import { useEffect } from "react";
 import cartesian from "./utils/cartesian";
 import optionsFunction from "./data/optionsFunction";
-import optionsRoom from "./data/optionsRoom";
+import optionsBrand from "./data/optionsBrand";
 import variantOptions from "./data/variantOptions";
 import VariantDetailPopUp from "./components/PopUp/VariantDetailPopUp";
+import { FaPlus } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
+import Select from "react-select";
+import AlertPopUp from "@/shared/components/PopUp/AlertPopUp";
 
 const Container = styled.div`
   margin: 2rem;
@@ -158,9 +162,35 @@ const AddImageButton = styled.button`
 `;
 
 const VariantDetail = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 3fr;
+  display: flex;
+  align-items: center;
   gap: 2rem;
+
+  > .createselect {
+    flex: 1;
+  }
+
+  > .trash {
+  }
+
+  > svg {
+    color: red;
+    cursor: pointer;
+  }
+`;
+
+const Input = styled(Select)`
+  border-radius: 3px;
+
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  width: 10rem;
+
+  transition: all 0.3s;
+  & * {
+    cursor: pointer;
+    outline: none !important;
+    border: none !important;
+  }
 `;
 
 const VariantContainer = styled.div`
@@ -168,12 +198,33 @@ const VariantContainer = styled.div`
   flex-direction: column;
   gap: 10px;
   padding: 10px 0;
+
+  > button {
+    color: #2962ff;
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border: none;
+    gap: 1rem;
+    font-size: 15px;
+    cursor: pointer;
+    width: 100%;
+  }
 `;
 
 const VariantItem = styled.div`
   padding: 1rem;
   border: 1px solid rgba(0, 0, 0, 0.1);
   cursor: pointer;
+
+  display: flex;
+
+  > span:nth-of-type(1) {
+    flex: 1;
+  }
+
+  gap: 1rem;
+  align-items: center;
 `;
 
 const VariantItemContainer = styled.div`
@@ -195,10 +246,13 @@ export default function Product() {
   const [images, setImages] = useState([]);
   const [imageError, setImageError] = useState();
   const [state, dispatch, ACTIONS] = useCreateProductReducer();
+  const [variantDetailPopUp, setVariantDetailPopUp] = useState(false);
+  const [chosenVariantDetail, setChosenVariantDetail] = useState(null);
+  const [isAlert, setIsAlert] = useState("");
   const inputRef = useRef();
 
-  const [inputValue, setInputValue] = useState(["", ""]);
-  const [value, setValue] = useState([[], []]);
+  const [inputValue, setInputValue] = useState(["", "", ""]);
+  const [value, setValue] = useState([[], [], []]);
 
   const handleKeyDown = (event, index) => {
     if (!inputValue[index]) return;
@@ -207,7 +261,9 @@ export default function Product() {
       case "Tab":
         setValue((prev) => {
           const newValue = [...prev];
-          newValue[index] = [...prev[index], createOption(inputValue[index])];
+          const currentValue = Array.isArray(prev[index]) ? prev[index] : [];
+
+          newValue[index] = [...currentValue, createOption(inputValue[index])];
           return newValue;
         });
         setInputValue((prev) => {
@@ -220,6 +276,14 @@ export default function Product() {
       default:
         break;
     }
+  };
+
+  const onAddMoreVariant = () => {
+    state.variants.push(0);
+    dispatch({
+      type: ACTIONS.CHANGE_VARIANTS,
+      next: [...state.variants],
+    });
   };
 
   const handleImageChange = (ev) => {
@@ -294,11 +358,11 @@ export default function Product() {
 
             <SelectContainer>
               <InputContainer>
-                <label>Room type</label>
+                <label>Brand</label>
                 <SelectInput
                   state={state.roomType}
                   setState={(value) => dispatch({ type: ACTIONS.CHANGE_ROOM_TYPE, next: value })}
-                  options={optionsRoom}
+                  options={optionsBrand}
                 />
               </InputContainer>
 
@@ -328,7 +392,14 @@ export default function Product() {
                     return (
                       <ImageItem key={index}>
                         <ImageLayout>
-                          <AiOutlineClose onClick={() => {}} />
+                          <AiOutlineClose
+                            onClick={() => {
+                              dispatch({
+                                type: ACTIONS.CHANGE_IMAGES,
+                                next: state.images.filter((image, position) => position != index),
+                              });
+                            }}
+                          />
                         </ImageLayout>
                         <img src={URL.createObjectURL(item)} />
                       </ImageItem>
@@ -353,18 +424,49 @@ export default function Product() {
               {state.variants.map((item, index) => {
                 return (
                   <VariantDetail key={index}>
-                    <SelectInput
-                      setState={(options) => {
+                    <Input
+                      value={variantOptions.find((i) => i.value == item)}
+                      onChange={(options) => {
                         state.variants[index] = options.value;
                         dispatch({
                           type: ACTIONS.CHANGE_VARIANTS,
                           next: state.variants,
                         });
                       }}
-                      state={variantOptions.find((i) => i.value == item)}
-                      options={variantOptions}
+                      options={variantOptions.filter(
+                        (optionItem) => !state.variants.includes(optionItem.value)
+                      )}
+                      isSearchable
+                    />
+                    <FaTrash
+                      className="trash"
+                      onClick={() => {
+                        if (state.variants.length == 1) {
+                          setIsAlert("You need at least 1 variant ");
+                          return;
+                        }
+                        state.variants = state.variants.filter((item, number) => index != number);
+                        dispatch({
+                          type: ACTIONS.CHANGE_VARIANTS,
+                          next: state.variants,
+                        });
+                        setValue((prev) => {
+                          prev[index] = [];
+                          const newValue = [];
+                          for (let item of prev) {
+                            if (item.length == 0) {
+                              continue;
+                            }
+                            newValue.push(item);
+                          }
+                          newValue.push([]);
+
+                          return newValue;
+                        });
+                      }}
                     />
                     <CreatableSelect
+                      className="createselect"
                       components={components}
                       inputValue={inputValue[index]}
                       isClearable
@@ -387,17 +489,26 @@ export default function Product() {
                   </VariantDetail>
                 );
               })}
+              {state.variants.length < 3 && (
+                <button onClick={onAddMoreVariant}>
+                  <FaPlus />
+                  Add more variant
+                </button>
+              )}
             </VariantContainer>
             <VariantItemContainer>
               {state.variant_detail.map((item) => {
                 return (
-                  <VariantItem>
-                    <div>
-                      <span>ssss</span>
-                      <span>
-                        {item.variant.length != 1 ? item.variant.join("/") : item.variant[0]}
-                      </span>
-                    </div>
+                  <VariantItem
+                    onClick={() => {
+                      setChosenVariantDetail(item);
+                      setVariantDetailPopUp(true);
+                    }}
+                  >
+                    <span>
+                      {item.variant.length != 1 ? item.variant.join("/") : item.variant[0]}
+                    </span>
+                    <span>${item.realPrice}</span>
                   </VariantItem>
                 );
               })}
@@ -407,6 +518,16 @@ export default function Product() {
         </FormContainer>
       </Container>
       {imageError && <ErrorPopUp message={imageError} action={() => setImageError("")} />}
+      {variantDetailPopUp && (
+        <VariantDetailPopUp
+          state={chosenVariantDetail}
+          action={() => setVariantDetailPopUp(false)}
+          setState={() => {
+            dispatch({ type: ACTIONS.CHANGE_VARIANT_DETAIL, next: state.variant_detail });
+          }}
+        />
+      )}
+      {isAlert && <AlertPopUp message={isAlert} action={() => setIsAlert("")} />}
     </>
   );
 }

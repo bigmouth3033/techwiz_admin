@@ -13,6 +13,7 @@ import TextInput from "@/shared/components/Input/TextInput";
 import { Link } from "react-router-dom";
 import { adminRequest } from "@/shared/api/adminApi";
 import Cookies from "js-cookie";
+import getFirebaseImageUrl from "@/shared/utils/getFireBaseImage";
 
 const Container = styled.div`
   position: sticky;
@@ -229,10 +230,19 @@ export default function Header({ isSideBarSmall, setIsSideBarSmall }) {
         <ProfileGroup ref={dropDownButton}>
           <Profile onClick={() => setDropDown((prev) => !prev)}>
             <div>
-              <p>{admin.data.data.role}</p>
-              <h5>{admin.data.data.fullName}</h5>
+              <p>{admin.data.data.userdetails.role}</p>
+              <h5>
+                {admin.data.data.userdetails.first_name +
+                  " " +
+                  admin.data.data.userdetails.last_name}
+              </h5>
             </div>
-            <Avatar name={admin.data.data.fullName} size="40" round />
+            <Avatar
+              name={admin.data.data.userdetails.first_name}
+              src={getFirebaseImageUrl(admin.data.data.userdetails.avatar)}
+              size="40"
+              round
+            />
           </Profile>
           {dropDown && (
             <DropDown ref={dropDownRef}>
