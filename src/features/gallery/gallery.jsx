@@ -1,11 +1,27 @@
 import React, { useState, useEffect, useRef } from "react";
+import { getProductQuerySelect } from "./api/galleryApi";
 import { Button, Form, Upload, Input, Select, message, InputNumber, Radio } from "antd";
+
 import axiosAdmin from "@/shared/api/axiosAdmin";
 import { PlusOutlined } from "@ant-design/icons";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useNavigate } from "react-router-dom";
+
+import SelectReact from "react-select";
+import makeAnimated from "react-select/animated";
+
+const animatedComponents = makeAnimated();
+
+const op = [
+  { value: 1, label: "Red" },
+  { value: 2, label: "Blue" },
+  { value: 3, label: "Green" },
+  { value: 4, label: "Black" },
+];
+
 export default function Gallery() {
+  const getProductQuery = getProductQuerySelect();
   const navigate = useNavigate();
   const { Option } = Select;
   const [form] = Form.useForm();
@@ -92,6 +108,8 @@ export default function Gallery() {
       formData.append("color_tone", value.tone);
       formData.append("description", value.description);
 
+      product.forEach((item) => formData.append("product_list", item.value));
+
       if (fileList.length < 5) {
         message.error("Error :" + "Atleast 5 images");
         return;
@@ -137,6 +155,8 @@ export default function Gallery() {
     };
     fetchdata();
   }, []);
+  const [product, setProduct] = useState([]);
+
   return (
     <>
       <div
@@ -206,6 +226,16 @@ export default function Gallery() {
             >
               {fileList.length >= 8 ? null : uploadButton}
             </Upload>
+          </Form.Item>
+          <Form.Item>
+            <SelectReact
+              closeMenuOnSelect={false}
+              value={product}
+              onChange={setProduct}
+              components={animatedComponents}
+              isMulti
+              options={getProductQuery.isSuccess && getProductQuery.data.data}
+            />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">

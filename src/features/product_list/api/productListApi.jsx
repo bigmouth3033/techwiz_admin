@@ -1,19 +1,36 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosAdmin from "@/shared/api/axiosAdmin";
+import qs from "qs";
 
-export const getProductListRequest = (pageNumber, pageSize) => {
-  const request = async () => {
+export const getProductListRequest = (
+  pageNumber,
+  pageSize,
+  active,
+  functionalityId,
+  brand,
+  search
+) => {
+  const request = async (pageNumber, pageSize, active, functionalityId, brand, search) => {
     const response = await axiosAdmin.get("ProductAdmin/get_products", {
-      params: { pageNumber, pageSize },
+      params: {
+        pageNumber,
+        pageSize,
+        active,
+        functionalityId,
+        brand,
+        search,
+      },
+      paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "repeat" }),
     });
 
     return response.data;
   };
 
   return useQuery({
-    queryKey: ["product_list", pageNumber, pageSize],
+    queryKey: ["product_list", pageNumber, pageSize, active, functionalityId, brand, search],
     queryFn: () => {
-      return request(pageNumber, pageSize);
+      return request(pageNumber, pageSize, active, functionalityId, brand, search);
     },
+    retry: 0,
   });
 };

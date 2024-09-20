@@ -8,6 +8,11 @@ import WaitingIcon from "@/shared/components/AnimationIcon/WaitingIcon";
 import { formatDate } from "@/shared/utils/DateTimeHandle";
 import getFirebaseImageUrl from "@/shared/utils/getFireBaseImage";
 import Avatar from "react-avatar";
+import TextInput from "@/shared/components/Input/TextInput";
+import brandOptions from "../product/data/optionsBrand";
+import optionsFunction from "../product/data/optionsFunction";
+import SelectReact from "react-select";
+import InputCheckBox from "@/shared/components/Input/InputCheckBox";
 
 const Container = styled.div`
   background-color: white;
@@ -155,9 +160,57 @@ const ProductColumn = styled.div`
   }
 `;
 
+const SearchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+`;
+
+const FilterBox = styled.div`
+  position: relative;
+  > button {
+    width: max-content;
+  }
+`;
+
+const FilterDropDown = styled.div`
+  margin-top: 5px;
+  background-color: white;
+  position: absolute;
+  width: 200%;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  padding: 1rem;
+
+  h5 {
+    font-size: 16px;
+  }
+
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  & .active_filter {
+    display: flex;
+    gap: 1rem;
+  }
+`;
+
 export default function ProductList() {
+  const [search, setSeach] = useState("");
+  const [filterBrand, setFilterBrand] = useState();
+  const [filterFunc, setFilterFunc] = useState();
+  const [filterStatus, setFilterStatus] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const getProductList = getProductListRequest(currentPage, 10);
+  const getProductList = getProductListRequest(
+    currentPage,
+    10,
+    filterStatus,
+    filterFunc?.map((item) => item.value),
+    filterBrand?.map((item) => item.value),
+    search
+  );
+  const [isFilterDropDown, setIsFilterDropDown] = useState(false);
 
   return (
     <Container>
@@ -166,6 +219,45 @@ export default function ProductList() {
           <WaitingIcon />
         </WaitingContainer>
       )}
+
+      <SearchContainer>
+        <FilterBox>
+          <Button1 onClick={() => setIsFilterDropDown((prev) => !prev)}>Filter Option</Button1>
+          {isFilterDropDown && (
+            <FilterDropDown>
+              <div>
+                <h5>Brand filter</h5>
+                <SelectReact
+                  value={filterBrand}
+                  onChange={setFilterBrand}
+                  closeMenuOnSelect={false}
+                  isMulti
+                  options={brandOptions}
+                />
+              </div>
+              <div>
+                <h5>Functionality filter</h5>
+                <SelectReact
+                  value={filterFunc}
+                  onChange={setFilterFunc}
+                  closeMenuOnSelect={false}
+                  isMulti
+                  options={optionsFunction}
+                />
+              </div>
+              <div className="active_filter">
+                <InputCheckBox
+                  checked={filterStatus}
+                  onChange={() => setFilterStatus((prev) => !prev)}
+                />{" "}
+                Active
+              </div>
+            </FilterDropDown>
+          )}
+        </FilterBox>
+
+        <TextInput state={search} setState={setSeach} placeholder={"Search"} />
+      </SearchContainer>
 
       <TableContent>
         <thead>
