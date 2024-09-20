@@ -11,6 +11,11 @@ import { MdFormatUnderlined } from "react-icons/md";
 import { GoBold } from "react-icons/go";
 import { MdOutlineFormatItalic } from "react-icons/md";
 import styled from "styled-components";
+import { CiImageOn } from "react-icons/ci";
+import { useCallback } from "react";
+import { useMutation } from "@tanstack/react-query";
+import axiosAdmin from "@/shared/api/axiosAdmin";
+import getFirebaseImageUrl from "@/shared/utils/getFireBaseImage";
 
 const MenuBar = styled.div`
   background-color: #edeff2;
@@ -33,6 +38,57 @@ const MenuBar = styled.div`
 `;
 
 const ToolBar = ({ editor }) => {
+  const uploadImageRequest = () => {
+    const request = async (payload) => {
+      const response = await axiosAdmin.post("Test/testUploadFile", payload);
+      return response.data;
+    };
+
+    return useMutation({
+      mutationFn: request,
+    });
+  };
+
+  const mutation = uploadImageRequest();
+
+  function handleFileSelection() {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.style.display = "none";
+
+    fileInput.onchange = function (event) {
+      const selectedFile = event.target.files[0];
+
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        mutation.mutate(formData, {
+          onSuccess: (response) => {
+            console.log(response);
+            addImage(response);
+          },
+        });
+      }
+
+      fileInput.remove();
+      console.log("Input element destroyed");
+    };
+
+    document.body.appendChild(fileInput);
+
+    fileInput.click();
+  }
+
+  const addImage = useCallback(
+    (url) => {
+      const fullUrl = getFirebaseImageUrl(url);
+      if (fullUrl) {
+        editor.chain().focus().setImage({ src: fullUrl }).run();
+      }
+    },
+    [editor]
+  );
+
   return (
     <MenuBar>
       <FaAlignLeft
@@ -80,6 +136,10 @@ const ToolBar = ({ editor }) => {
       <MdOutlineFormatItalic
         onClick={() => editor.chain().focus().toggleItalic().run()}
         className={editor.isActive("italic") ? "is-active" : ""}
+      />
+      <CiImageOn
+        onClick={handleFileSelection}
+        className={editor.isActive("bold") ? "is-active" : ""}
       />
     </MenuBar>
   );

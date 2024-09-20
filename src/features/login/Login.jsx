@@ -13,16 +13,17 @@ import background from "./assets/images/simple_background.png";
 
 const Container = styled.div`
   height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+
+  background: url(${background});
 `;
 
 const LoginForm = styled.form`
   background-color: white;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
   padding: 1rem;
-
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 5rem);
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -48,6 +49,13 @@ const ButtonContainer = styled.div`
 const CustomInput = styled(TextInput)`
   padding: 6px;
   width: 20rem;
+`;
+
+const HeaderContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+
+  padding: 2rem;
 `;
 
 const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -123,7 +131,7 @@ export default function Login() {
           }
 
           if (response.status == 403) {
-            setIsNotActive(true);
+            setIsNotActive(response.message);
             return;
           }
 
@@ -143,6 +151,15 @@ export default function Login() {
   return (
     <>
       <Container>
+        <HeaderContainer>
+          <Button1
+            onClick={() => {
+              navigate("/designer_register");
+            }}
+          >
+            Become a Designer
+          </Button1>
+        </HeaderContainer>
         <LoginForm>
           <InputContainer>
             <label>Email</label>
@@ -167,9 +184,7 @@ export default function Login() {
           action={() => setIsWrongAccount(false)}
         />
       )}
-      {isNotActive && (
-        <ErrorPopUp message={"Account is not active"} action={() => setIsNotActive(false)} />
-      )}
+      {isNotActive && <ErrorPopUp message={isNotActive} action={() => setIsNotActive(false)} />}
     </>
   );
 }

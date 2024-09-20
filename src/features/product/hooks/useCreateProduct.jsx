@@ -1,5 +1,8 @@
 import React from "react";
 import { useReducer } from "react";
+import brandOptions from "../data/optionsBrand";
+import optionsFunction from "../data/optionsFunction";
+import variantOptions from "../data/variantOptions";
 
 export default function useCreateProductReducer() {
   const ACTIONS = {
@@ -27,8 +30,8 @@ export default function useCreateProductReducer() {
         return { ...state, active: action.next };
       case ACTIONS.CHANGE_VARIANT_DETAIL:
         return { ...state, variant_detail: action.next };
-      case ACTIONS.CHANGE_ROOM_TYPE:
-        return { ...state, roomType: action.next };
+      case ACTIONS.CHANGE_BRAND:
+        return { ...state, brand: action.next };
       case ACTIONS.CHANGE_FUNCTION:
         return { ...state, roomFuncion: action.next };
     }
@@ -36,11 +39,11 @@ export default function useCreateProductReducer() {
 
   const [state, dispatch] = useReducer(reducer, {
     productName: "",
-    roomType: null,
-    roomFuncion: null,
+    brand: brandOptions[0],
+    roomFuncion: optionsFunction[0],
     description: "",
     images: [],
-    variants: [1],
+    variants: [variantOptions[0]],
     variant_detail: [],
     active: true,
   });

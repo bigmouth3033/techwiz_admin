@@ -15,63 +15,73 @@ import { PiTicketBold } from "react-icons/pi";
 import { AiOutlineProduct } from "react-icons/ai";
 import { TbCategory2 } from "react-icons/tb";
 import { MdCategory } from "react-icons/md";
+import { SiDesignernews } from "react-icons/si";
+import { IoReloadOutline } from "react-icons/io5";
+import { CgProfile } from "react-icons/cg";
 
 const sidebar_content = [
   {
-    name: "Dash Board",
+    name: "Designer Profile",
     type: "button",
-    icon: <MdDashboard />,
-    link: "/",
+    icon: <CgProfile />,
+    link: "/designer_profile",
+    role: "designer",
   },
   {
-    name: "Admin",
+    name: "Designer Consultation",
+    type: "button",
+    icon: <CgProfile />,
+    link: "/consultion_list",
+    role: "designer",
+  },
+  {
+    name: "Designer",
     type: "group",
-    icon: <RiAdminLine />,
+    icon: <SiDesignernews />,
+    role: "admin",
     children: [
       {
-        name: "List Admin",
-        icon: <CiViewList />,
-        link: "/employee_list",
+        name: "Designer List",
+        icon: <AiOutlineProduct />,
+        link: "/designer_list",
       },
       {
-        name: "Add Admin",
-        icon: <IoMdAdd />,
-        link: "/custom_admin",
+        name: "Unapproved Designer",
+        icon: <IoReloadOutline />,
+        link: "/pending_approved_designer",
       },
     ],
   },
   {
-    name: "Customer Chat",
+    name: "Gallery",
+    type: "group",
+    icon: <IoChatbox />,
+    role: "admin",
+    children: [
+      {
+        name: "Add Gallery",
+        icon: <CiViewList />,
+        link: "/add_gallery",
+      },
+      {
+        name: "List Gallery",
+        icon: <IoMdAdd />,
+        link: "/list_gallery",
+      },
+    ],
+  },
+  {
+    name: "Order",
     type: "button",
     icon: <IoChatbox />,
-    link: "/chat",
-  },
-  {
-    name: "Ranking",
-    type: "group",
-    icon: <FaRankingStar />,
-    children: [
-      {
-        name: "Rank List",
-        icon: <PiRanking />,
-        link: "/rank_list",
-      },
-      {
-        name: "Add New Rank",
-        icon: <IoMdAdd />,
-        link: "/new_rank",
-      },
-      {
-        name: "Voucher",
-        icon: <PiTicketBold />,
-        link: "/rank_voucher",
-      },
-    ],
+    link: "/list_order",
+    role: "admin",
   },
   {
     name: "Product",
     type: "group",
     icon: <TbCategory2 />,
+    role: "admin",
     children: [
       {
         name: "Product List",

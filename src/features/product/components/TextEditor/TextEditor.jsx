@@ -17,6 +17,7 @@ import Underline from "@tiptap/extension-underline";
 import Italic from "@tiptap/extension-italic";
 import Bold from "@tiptap/extension-bold";
 import ToolBar from "./ToolBar";
+import { useEffect } from "react";
 
 const EditorContainer = styled.div`
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -67,7 +68,7 @@ export default function TextEditor({ state, setState }) {
         types: ["heading", "paragraph"],
       }),
     ],
-    state,
+    content: state,
     onUpdate: ({ editor }) => {
       setState(editor.getHTML());
     },

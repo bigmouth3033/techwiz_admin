@@ -25,6 +25,10 @@ const Container = styled.div`
   height: 4.8rem;
   align-items: center;
   padding: 0 1rem;
+
+  & p {
+    margin: 0;
+  }
 `;
 
 const Left = styled.div`
@@ -206,40 +210,33 @@ export default function Header({ isSideBarSmall, setIsSideBarSmall }) {
           {!isSideBarSmall ? <FaBars /> : <FaArrowRight />}
         </HideShowButton>
         <p>{currentPage}</p>
-        <SearchBox>
-          <CustomTextInput state={search} setState={setSearch} placeholder={"Search"} />
-          <SearchOptions>
-            {edited_sidebar
-              .filter((item) => {
-                return (
-                  item.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()) && search != ""
-                );
-              })
-              .map((item) => (
-                <SearchOption to={item.link}>
-                  <p>
-                    {item.icon} {item.name}
-                  </p>
-                  <p>{item.link}</p>
-                </SearchOption>
-              ))}
-          </SearchOptions>
-        </SearchBox>
       </Left>
       <Right>
         <ProfileGroup ref={dropDownButton}>
           <Profile onClick={() => setDropDown((prev) => !prev)}>
             <div>
-              <p>{admin.data.data.userdetails.role}</p>
+              <p>{admin.data.data.userdetails ? "Admin" : "Designer"}</p>
               <h5>
-                {admin.data.data.userdetails.first_name +
+                {(admin.data.data.userdetails
+                  ? admin.data.data.userdetails.first_name
+                  : admin.data.data.interiordesigner.first_name) +
                   " " +
-                  admin.data.data.userdetails.last_name}
+                  (admin.data.data.userdetails
+                    ? admin.data.data.userdetails.last_name
+                    : admin.data.data.interiordesigner.last_name)}
               </h5>
             </div>
             <Avatar
-              name={admin.data.data.userdetails.first_name}
-              src={getFirebaseImageUrl(admin.data.data.userdetails.avatar)}
+              name={
+                admin.data.data.userdetails != null
+                  ? admin.data.data.userdetails.first_name
+                  : admin.data.data.interiordesigner.first_name
+              }
+              src={getFirebaseImageUrl(
+                admin.data.data.userdetails
+                  ? admin.data.data.userdetails.avatar
+                  : admin.data.data.interiordesigner.avatar
+              )}
               size="40"
               round
             />

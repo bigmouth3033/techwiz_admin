@@ -25,9 +25,9 @@ const regex = /^-?\d+(\.\d+)?$/;
 export default function MoneyInput({ state, setState, placeholder }) {
   const [display, setDisplay] = useState("");
 
-  // const handleBlur = () => {
-  //   setState("displayState");
-  // };
+  const handleBlur = () => {
+    setState("displayState");
+  };
 
   return <Input placeholder={placeholder} value={display} onChange={setDisplay} />;
 }

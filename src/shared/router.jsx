@@ -11,6 +11,18 @@ import UpdateRank from "@/features/update_rank/UpdateRank";
 import RankList from "@/features/ranks/RankList";
 import NewRankVoucher from "@/features/new_rank_voucher/NewRankVoucher";
 import Product from "@/features/product/Product";
+import DesignerRegister from "@/features/designer_register/DesignerRegister";
+import PendingApprovedDesigner from "@/features/pending_approved_designer/PendingApprovedDesigner";
+import DesignerList from "@/features/designer_list/DesignerList";
+import DesignerProfile from "@/features/designer_profile/DesignerProfile";
+import DesignerConsultation from "@/features/designer_consultation/DesignerConsultation";
+import ProductList from "@/features/product_list/ProductList";
+
+import Gallery from "@/features/gallery/gallery";
+import GalleryList from "@/features/gallery_list/GalleryList";
+import Order from "@/features/Order/Order";
+import UpdateGallery from "@/features/UpdateGallery/UpdateGallery";
+import OrderDetail from "@/features/OrderDetail/OrderDetail";
 
 const router = createBrowserRouter([
   {
@@ -57,11 +69,55 @@ const router = createBrowserRouter([
         path: "/new_product",
         element: <Product />,
       },
+      {
+        path: "/product_list",
+        element: <ProductList />,
+      },
+      {
+        path: "/pending_approved_designer",
+        element: <PendingApprovedDesigner />,
+      },
+      {
+        path: "/designer_list",
+        element: <DesignerList />,
+      },
+      {
+        path: "/designer_profile",
+        element: <DesignerProfile />,
+      },
+      {
+        path: "/consultion_list",
+        element: <DesignerConsultation />,
+      },
+      {
+        path: "/add_gallery",
+        element: <Gallery />,
+      },
+      {
+        path: "/list_gallery",
+        element: <GalleryList />,
+      },
+      {
+        path: "/list_order",
+        element: <Order />,
+      },
+      {
+        path: "/update_gallery",
+        element: <UpdateGallery />,
+      },
+      {
+        path: "/order_detail",
+        element: <OrderDetail />,
+      },
     ],
   },
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/designer_register",
+    element: <DesignerRegister />,
   },
 ]);
 

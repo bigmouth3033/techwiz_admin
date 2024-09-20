@@ -20,17 +20,24 @@ import { FaPlus } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import Select from "react-select";
 import AlertPopUp from "@/shared/components/PopUp/AlertPopUp";
+import { createNewProductRequest } from "./api/createProductApi";
+import AllVariantPopUp from "./components/PopUp/AllVariantPopUp";
 
 const Container = styled.div`
   margin: 2rem;
   padding: 2rem;
-  background-color: white;
   margin-bottom: 5rem;
+
+  & margin {
+    padding: 0;
+    margin: 0;
+  }
 `;
 
 const FormContainer = styled.div`
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 3fr 1fr;
+  gap: 1rem;
 `;
 
 const InputContainer = styled.div`
@@ -40,9 +47,20 @@ const InputContainer = styled.div`
   padding: 10px 0;
 `;
 
-const LeftContainer = styled.div``;
+const LeftContainer = styled.div`
+  background-color: white;
+  padding: 1rem;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+`;
 
-const RightContainer = styled.div``;
+const RightContainer = styled.div`
+  > div {
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    background-color: white;
+    position: sticky;
+    top: 5rem;
+  }
+`;
 
 const CatgoryContainer = styled.div``;
 
@@ -233,6 +251,87 @@ const VariantItemContainer = styled.div`
   gap: 1rem;
 `;
 
+const ShowInfo = styled.div`
+  padding: 10px;
+  background-color: white;
+`;
+
+const ContentItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  & h5 {
+    color: #6c798f;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  ${(props) => {
+    if (props.$split == true) {
+      return css`
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+
+        > div {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+      `;
+    }
+  }}
+`;
+
+const ActionContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0.4rem 0;
+
+  > input {
+  }
+`;
+
+const ConfirmButton = styled.button`
+  cursor: pointer;
+  color: white;
+  background-color: #2962ff;
+  border: none;
+  padding: 0.3rem 0;
+  border-radius: 5px;
+
+  &:hover {
+    background-color: #0052cc;
+  }
+`;
+
+const DiscardButton = styled.button`
+  cursor: pointer;
+  border: 1px solid black;
+  background-color: white;
+  border-radius: 5px;
+  padding: 0.3rem 0;
+  font-weight: 600;
+`;
+
+const ButtonContainer = styled.div`
+  margin-top: 10px;
+  display: flex;
+  gap: 1rem;
+
+  > button {
+    flex: 1;
+  }
+`;
+
+const VariantUpdateButton = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin: 1rem 0;
+`;
+
 const components = {
   DropdownIndicator: null,
 };
@@ -243,11 +342,14 @@ const createOption = (label) => ({
 });
 
 export default function Product() {
+  const createNewProduct = createNewProductRequest();
+  const [errors, setErrors] = useState();
   const [images, setImages] = useState([]);
   const [imageError, setImageError] = useState();
   const [state, dispatch, ACTIONS] = useCreateProductReducer();
   const [variantDetailPopUp, setVariantDetailPopUp] = useState(false);
   const [chosenVariantDetail, setChosenVariantDetail] = useState(null);
+  const [onEditAll, setOnEditAll] = useState();
   const [isAlert, setIsAlert] = useState("");
   const inputRef = useRef();
 
@@ -279,7 +381,8 @@ export default function Product() {
   };
 
   const onAddMoreVariant = () => {
-    state.variants.push(0);
+    state.variants.push(variantOptions.filter((item) => !state.variants.includes(item))[0]);
+
     dispatch({
       type: ACTIONS.CHANGE_VARIANTS,
       next: [...state.variants],
@@ -343,6 +446,36 @@ export default function Product() {
     }
   }, [value]);
 
+  const onCreateProduct = () => {
+    if (value.find((item, index) => index < state.variants.length && item.length == 0)) {
+      setErrors("Variant cannot be empty");
+      return;
+    }
+
+    if (state.images.length == 0) {
+      setErrors("You need atleast 1 image");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("ProductName", state.productName);
+    formData.append("Brand", state.brand.value);
+    formData.append("Description", state.description);
+    formData.append("Status", state.active);
+    formData.append("RoomFuncion", state.roomFuncion.value);
+    state.images.forEach((item) => formData.append("Images", item));
+    state.variants.forEach((item) => formData.append("Variants", item.value));
+    state.variant_detail.forEach((item) => formData.append("VariantsJSON", JSON.stringify(item)));
+
+    createNewProduct.mutate(formData, {
+      onSuccess: (response) => {
+        if (response.status == 200) {
+          window.location.reload();
+        }
+      },
+    });
+  };
+
   return (
     <>
       <Container>
@@ -360,8 +493,8 @@ export default function Product() {
               <InputContainer>
                 <label>Brand</label>
                 <SelectInput
-                  state={state.roomType}
-                  setState={(value) => dispatch({ type: ACTIONS.CHANGE_ROOM_TYPE, next: value })}
+                  state={state.brand}
+                  setState={(value) => dispatch({ type: ACTIONS.CHANGE_BRAND, next: value })}
                   options={optionsBrand}
                 />
               </InputContainer>
@@ -425,16 +558,16 @@ export default function Product() {
                 return (
                   <VariantDetail key={index}>
                     <Input
-                      value={variantOptions.find((i) => i.value == item)}
+                      value={item}
                       onChange={(options) => {
-                        state.variants[index] = options.value;
+                        state.variants[index] = options;
                         dispatch({
                           type: ACTIONS.CHANGE_VARIANTS,
                           next: state.variants,
                         });
                       }}
                       options={variantOptions.filter(
-                        (optionItem) => !state.variants.includes(optionItem.value)
+                        (optionItem) => !state.variants.includes(optionItem)
                       )}
                       isSearchable
                     />
@@ -496,17 +629,23 @@ export default function Product() {
                 </button>
               )}
             </VariantContainer>
+            {state.variant_detail.length != 0 && (
+              <VariantUpdateButton>
+                <Button1 onClick={() => setOnEditAll(true)}>Update All</Button1>
+              </VariantUpdateButton>
+            )}
             <VariantItemContainer>
-              {state.variant_detail.map((item) => {
+              {state.variant_detail.map((item, index) => {
                 return (
                   <VariantItem
+                    key={index}
                     onClick={() => {
                       setChosenVariantDetail(item);
                       setVariantDetailPopUp(true);
                     }}
                   >
                     <span>
-                      {item.variant.length != 1 ? item.variant.join("/") : item.variant[0]}
+                      {item.variant.length != 1 ? item.variant.join(" / ") : item.variant[0]}
                     </span>
                     <span>${item.realPrice}</span>
                   </VariantItem>
@@ -514,7 +653,28 @@ export default function Product() {
               })}
             </VariantItemContainer>
           </LeftContainer>
-          <RightContainer></RightContainer>
+          <RightContainer>
+            <ShowInfo>
+              <ContentItem>
+                <h5>Status</h5>
+                <hr />
+                <ActionContainer>
+                  <InputCheckBox
+                    checked={state.active}
+                    onChange={() => {
+                      dispatch({ type: ACTIONS.CHANGE_ACTIVE, next: !state.active });
+                    }}
+                  />
+                  Product Active
+                </ActionContainer>
+                <hr />
+                <ButtonContainer>
+                  <ConfirmButton onClick={() => onCreateProduct()}>Save</ConfirmButton>
+                  <DiscardButton onClick={() => window.location.reload()}>Discard</DiscardButton>
+                </ButtonContainer>
+              </ContentItem>
+            </ShowInfo>
+          </RightContainer>
         </FormContainer>
       </Container>
       {imageError && <ErrorPopUp message={imageError} action={() => setImageError("")} />}
@@ -527,7 +687,17 @@ export default function Product() {
           }}
         />
       )}
+      {onEditAll && (
+        <AllVariantPopUp
+          setState={() => {
+            dispatch({ type: ACTIONS.CHANGE_VARIANT_DETAIL, next: state.variant_detail });
+          }}
+          action={() => setOnEditAll()}
+          state={state.variant_detail}
+        />
+      )}
       {isAlert && <AlertPopUp message={isAlert} action={() => setIsAlert("")} />}
+      {errors && <ErrorPopUp message={errors} action={() => setErrors()} />}
     </>
   );
 }

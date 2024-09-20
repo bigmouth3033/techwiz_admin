@@ -5,7 +5,9 @@ import { IoIosArrowForward } from "react-icons/io";
 import { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { Tooltip } from "react-tooltip";
+import logo from "./assets/images/logo-v.png";
 import ReactDOM from "react-dom";
+import { adminRequest } from "@/shared/api/adminApi";
 
 const TooltipContainer = ({ children }) => {
   return ReactDOM.createPortal(children, document.body);
@@ -45,6 +47,7 @@ const LogoContainer = styled.div`
     display: block;
     width: 100%;
     height: 100%;
+    object-fit: contain;
   }
 `;
 
@@ -182,6 +185,7 @@ const ChildrenButton = styled(Link)`
 
 export default function SideBar({ isSideBarSmall }) {
   const initialState = {};
+  const admin = adminRequest();
 
   for (let item of sidebar_content) {
     if (item.type == "group") {
@@ -195,25 +199,25 @@ export default function SideBar({ isSideBarSmall }) {
     <Container>
       {!isSideBarSmall && (
         <LogoContainer>
-          <img src="https://s1.vnecdn.net/vnexpress/restruct/i/v933/v2_2019/pc/graphics/logo.svg" />
+          <img src={logo} />
         </LogoContainer>
       )}
       {sidebar_content.map((item, index) => {
-        if (item.type == "button" && !isSideBarSmall) {
+        if (item.type == "button" && !isSideBarSmall && admin.data.data.role == item.role) {
           return (
             <SingleButton key={index} to={item.link}>
               {item.icon} {item.name}
             </SingleButton>
           );
         }
-        if (item.type == "button" && isSideBarSmall) {
+        if (item.type == "button" && isSideBarSmall && admin.data.data.role == item.role) {
           return (
             <SingleButtonSmall key={index} to={item.link}>
               {item.icon}
             </SingleButtonSmall>
           );
         }
-        if (item.type == "group" && !isSideBarSmall) {
+        if (item.type == "group" && !isSideBarSmall && admin.data.data.role == item.role) {
           return (
             <Group key={index}>
               <GroupButton
@@ -241,7 +245,7 @@ export default function SideBar({ isSideBarSmall }) {
             </Group>
           );
         }
-        if (item.type == "group" && isSideBarSmall) {
+        if (item.type == "group" && isSideBarSmall && admin.data.data.role == item.role) {
           return (
             <GroupSmall key={index}>
               <GroupButtonSmall data-tooltip-id={item.name}>{item.icon}</GroupButtonSmall>
