@@ -10,6 +10,7 @@ import PopUp from "@/shared/components/PopUp/PopUp";
 import { getApprovedDesignerRequest } from "./api/designerListApi";
 import { changeDesignerStatusRequest } from "./api/designerListApi";
 import ConfirmPopUp from "@/shared/components/PopUp/ConfirmPopUp";
+import TextInput from "@/shared/components/Input/TextInput";
 
 const Container = styled.div`
   background-color: white;
@@ -127,6 +128,12 @@ const PermissionColumn = styled.div`
   }
 `;
 
+const SearchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+`;
+
 const ButtonContainer = styled.div`
   display: flex;
   gap: 10px;
@@ -138,7 +145,8 @@ const CustomButton2 = styled(Button2)`
 
 export default function DesignerList() {
   const [currentPage, setCurrentPage] = useState(1);
-  const getApprovedDesigner = getApprovedDesignerRequest(currentPage, 10);
+  const [search, setSearch] = useState("");
+  const getApprovedDesigner = getApprovedDesignerRequest(currentPage, 10, search);
   const changeDesignerStatus = changeDesignerStatusRequest();
   const [isPopUp, setIsPopUp] = useState();
   const [isConfirm, setIsConfirm] = useState();
@@ -166,6 +174,10 @@ export default function DesignerList() {
             <WaitingIcon />
           </WaitingContainer>
         )}
+
+        <SearchContainer>
+          <TextInput state={search} setState={setSearch} placeholder={"Search"} />
+        </SearchContainer>
         {getApprovedDesigner.isSuccess && (
           <TableContent>
             <thead>
@@ -205,7 +217,7 @@ export default function DesignerList() {
                     <td>
                       <ButtonContainer>
                         <CustomButton2 onClick={() => setIsConfirm(item.id)}>
-                          {item.isActive ? "Deactive" : "Active"}
+                          {item.status ? "Deactive" : "Active"}
                         </CustomButton2>
                         <CustomButton2 onClick={() => setIsPopUp(item.portfolio)}>
                           Portfolio

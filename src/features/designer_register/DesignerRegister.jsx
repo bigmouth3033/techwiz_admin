@@ -29,6 +29,10 @@ const Container = styled.div`
 
   width: 80%;
   margin: auto;
+
+  h5 {
+    color: red;
+  }
 `;
 
 const Form = styled.div`
@@ -128,6 +132,7 @@ const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PasswordRegex = /^[A-Za-z0-9]{6,}$/;
 
 export default function DesignerRegister() {
+  const [avatarError, setAvatarError] = useState();
   const registerNewDesigner = registerNewDesignerRequest();
   let fileRef = useRef();
   const navigate = useNavigate();
@@ -186,6 +191,11 @@ export default function DesignerRegister() {
     ev.preventDefault();
 
     let isOk = true;
+
+    if (!avatar) {
+      setAvatarError(true);
+      return;
+    }
 
     if (!email) {
       setErrors((prev) => {
@@ -297,9 +307,9 @@ export default function DesignerRegister() {
       });
     }
 
-    if (!Number(year)) {
+    if (!Number(year) || Number(year) >= 100) {
       setErrors((prev) => {
-        return { ...prev, year: "Year cannot be empty" };
+        return { ...prev, year: "Wrong year format" };
       });
       isOk = false;
     } else {
@@ -487,6 +497,7 @@ export default function DesignerRegister() {
       )}
       {imageError && <ErrorPopUp message={imageError} action={() => setImageError("")} />}
       {alert && <AlertPopUp message={alert} action={() => setAlert("")} />}
+      {avatarError && <AlertPopUp message={"Avatar is required"} action={() => setAvatarError()} />}
     </>
   );
 }

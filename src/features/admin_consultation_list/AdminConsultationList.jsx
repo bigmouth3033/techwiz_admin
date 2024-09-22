@@ -1,19 +1,13 @@
 import styled, { css } from "styled-components";
 import { useState } from "react";
-import { getDesignerConsultationRequest } from "./api/designerConsultationApi";
+import { getAdminConsultationRequest } from "./api/adminConsultationApi";
 import Button2 from "@/shared/components/Button/Button2";
 import WaitingIcon from "@/shared/components/AnimationIcon/WaitingIcon";
 import Pagination from "@/shared/components/Pagination/pagination";
 import Avatar from "react-avatar";
 import getFirebaseImageUrl from "@/shared/utils/getFireBaseImage";
 import { formatDate } from "@/shared/utils/DateTimeHandle";
-import { aproveConsultationRequest } from "./api/designerConsultationApi";
-import { denyConsultationRequest } from "./api/designerConsultationApi";
 import ConfirmPopUp from "@/shared/components/PopUp/ConfirmPopUp";
-import PopUp from "@/shared/components/PopUp/PopUp";
-import XButton from "@/shared/components/Button/XButton";
-import { getCustomerOrderListRequest } from "./api/designerConsultationApi";
-import { useNavigate } from "react-router-dom";
 
 const Container = styled.div`
   background-color: white;
@@ -23,26 +17,6 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2rem;
-`;
-
-const Note = styled.textarea`
-  padding: 8px;
-  border-radius: 3px;
-  width: 100%;
-  width: 20rem;
-  height: 10rem;
-
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  outline: none;
-  transition: all 0.3s;
-
-  &:focus {
-    border: 1px solid rgba(0, 0, 255, 0.4);
-  }
-
-  &:active {
-    border: 1px solid rgba(0, 0, 255, 0.4);
-  }
 `;
 
 const WaitingContainer = styled.div`
@@ -185,65 +159,12 @@ const HeaderButton = styled.div`
   }}
 `;
 
-const XButtonContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  > svg {
-    transform: translate(100%, -90%);
-    background-color: white;
-
-    &:hover {
-      background-color: white;
-    }
-  }
-`;
-
-const CustomPopUp = styled(PopUp)`
-  margin: 0;
-  padding: 1rem;
-`;
-
-export default function DesignerConsultation() {
-  const navigate = useNavigate();
-  const [note, setNote] = useState(false);
-  const [isShowOrderList, setIsShowOrderList] = useState();
-  const aproveConsultation = aproveConsultationRequest();
-  const denyConsultation = denyConsultationRequest();
+export default function AdminConsultationList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [status, setStatus] = useState("pending");
-  const getDesignerConsultation = getDesignerConsultationRequest(currentPage, 10, status);
+  const getAdminConsultation = getAdminConsultationRequest(currentPage, 10, status);
   const [approveConfirm, setApproveConfirm] = useState();
   const [denyConfirm, setDenyConfirm] = useState();
-
-  const onApprove = (consultationId) => {
-    const formData = new FormData();
-
-    formData.append("consultationId", consultationId);
-
-    aproveConsultation.mutate(formData, {
-      onSuccess: (response) => {
-        if (response.status == 200) {
-          setApproveConfirm();
-          getDesignerConsultation.refetch();
-        }
-      },
-    });
-  };
-
-  const onDeny = (consultationId) => {
-    const formData = new FormData();
-
-    formData.append("consultationId", consultationId);
-
-    denyConsultation.mutate(formData, {
-      onSuccess: (response) => {
-        if (response.status == 200) {
-          setDenyConfirm();
-          getDesignerConsultation.refetch();
-        }
-      },
-    });
-  };
 
   return (
     <>
@@ -259,26 +180,26 @@ export default function DesignerConsultation() {
             Denied
           </HeaderButton>
         </Header>
-        {getDesignerConsultation.isLoading && (
+        {getAdminConsultation.isLoading && (
           <WaitingContainer>
             <WaitingIcon />
           </WaitingContainer>
         )}
+
         <TableContent>
           <thead>
             <tr>
               <th>User</th>
+              <th>Designer</th>
               <th>Schedule</th>
               <th>Address</th>
-              <th>Order history</th>
               <th>Note</th>
-              {status == "pending" && <th>Action</th>}
             </tr>
           </thead>
 
           <tbody>
-            {getDesignerConsultation.isSuccess &&
-              getDesignerConsultation.data.data.map((item, index) => {
+            {getAdminConsultation.isSuccess &&
+              getAdminConsultation.data.data.map((item, index) => {
                 return (
                   <tr key={index}>
                     <td>
@@ -295,33 +216,35 @@ export default function DesignerConsultation() {
                         </div>
                       </EmailColumn>
                     </td>
+                    <td>
+                      <EmailColumn>
+                        <Avatar
+                          round
+                          size="60"
+                          name={item.designer.first_name}
+                          src={getFirebaseImageUrl(item.designer.avatar)}
+                        />
+                        <div>
+                          <span>{item.designer.first_name + " " + item.designer.last_name}</span>
+                          <span>Contact {item.designer.contact_number} </span>
+                        </div>
+                      </EmailColumn>
+                    </td>
                     <td>{formatDate(item.scheduled_datetime)} </td>
                     <td>{item.address}</td>
-                    <td>
-                      <Button2 onClick={() => setIsShowOrderList(item.user_id)}>History</Button2>
-                    </td>
-                    <td>
-                      <Button2 onClick={() => setNote(item.notes)}>Show note</Button2>
-                    </td>
-                    {status == "pending" && (
-                      <td>
-                        <ButtonContainer>
-                          <Button2 onClick={() => setApproveConfirm(item.id)}>Approve</Button2>
-                          <Button2 onClick={() => setDenyConfirm(item.id)}>Deny</Button2>
-                        </ButtonContainer>
-                      </td>
-                    )}
+                    <td>{item.notes}</td>
                   </tr>
                 );
               })}
           </tbody>
         </TableContent>
+
         <Footer>
-          {getDesignerConsultation.isSuccess && (
+          {getAdminConsultation.isSuccess && (
             <Pagination
               currentPage={currentPage}
               setCurrentPage={setCurrentPage}
-              totalPage={getDesignerConsultation.data.totalPages}
+              totalPage={getAdminConsultation.data.totalPages}
             />
           )}
         </Footer>
@@ -333,6 +256,7 @@ export default function DesignerConsultation() {
           message={"confirm?"}
         />
       )}
+
       {denyConfirm && (
         <ConfirmPopUp
           cancel={() => setDenyConfirm()}
@@ -340,72 +264,6 @@ export default function DesignerConsultation() {
           message={"confirm?"}
         />
       )}
-      {note && (
-        <CustomPopUp action={() => {}}>
-          <XButtonContainer>
-            <XButton action={() => setNote()} />
-          </XButtonContainer>
-          <Note>{note}</Note>
-        </CustomPopUp>
-      )}
-      {isShowOrderList && <OrderPopUp action={() => setIsShowOrderList()} id={isShowOrderList} />}
     </>
-  );
-}
-
-function OrderPopUp({ id, action }) {
-  const navigate = useNavigate();
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const getCustomerOrderList = getCustomerOrderListRequest(currentPage, 10, id);
-
-  return (
-    <CustomPopUp action={action}>
-      <TableContent>
-        <thead>
-          <tr>
-            <th>Customer</th>
-            <th>Phone</th>
-            <th>Address</th>
-            <th>Total</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Detail</th>
-          </tr>
-        </thead>
-        <tbody>
-          {getCustomerOrderList.isSuccess &&
-            getCustomerOrderList.data.data.map((item, index) => {
-              return (
-                <tr>
-                  <td>
-                    {item.user.userdetails.first_name + " " + item.user.userdetails.last_name}{" "}
-                  </td>
-                  <td>{item.user.userdetails.contact_number}</td>
-                  <td>{item.user.userdetails.address}</td>
-                  <td>{item.total}</td>
-                  <td>{formatDate(item.created_date)}</td>
-                  <td>{item.status}</td>
-                  <td>
-                    <Button2 onClick={() => navigate(`/order_detail?id=${item.id}`)}>
-                      Detail
-                    </Button2>
-                  </td>
-                </tr>
-              );
-            })}
-        </tbody>
-      </TableContent>
-
-      <Footer>
-        {getCustomerOrderList.isSuccess && (
-          <Pagination
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            totalPage={getCustomerOrderList.data.totalPages}
-          />
-        )}
-      </Footer>
-    </CustomPopUp>
   );
 }

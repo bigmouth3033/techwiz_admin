@@ -35,6 +35,13 @@ const sidebar_content = [
     role: "designer",
   },
   {
+    name: "Consultation List",
+    type: "button",
+    icon: <CgProfile />,
+    link: "/admin_consultion_list",
+    role: "admin",
+  },
+  {
     name: "Designer",
     type: "group",
     icon: <SiDesignernews />,
@@ -76,6 +83,31 @@ const sidebar_content = [
     icon: <IoChatbox />,
     link: "/list_order",
     role: "admin",
+  },
+  {
+    name: "Create Blog",
+    type: "button",
+    icon: <IoChatbox />,
+    link: "/create_blog",
+    role: "designer",
+  },
+  {
+    name: "Blog",
+    type: "group",
+    icon: <IoChatbox />,
+    role: "admin",
+    children: [
+      {
+        name: "Add Blog",
+        icon: <CiViewList />,
+        link: "/create_blog",
+      },
+      {
+        name: "Blog List",
+        icon: <IoMdAdd />,
+        link: "/blog",
+      },
+    ],
   },
   {
     name: "Product",

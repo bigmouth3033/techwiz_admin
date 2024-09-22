@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Form,
-  Input,
-  Radio,
-  
-  DatePicker,
-  Space,
-  message,
-} from "antd";
+import { Form, Input, Radio, DatePicker, Space, message } from "antd";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { Table } from "react-bootstrap";
 import axiosAdmin from "@/shared/api/axiosAdmin";
+import styled from "styled-components";
+
+const Container = styled.div`
+  margin: 2rem;
+  padding: 1rem;
+  background-color: white;
+`;
+
 export default function OrderDetail() {
   const location = useLocation();
-
- 
+  const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const id = searchParams.get("id");
   const [resultvalue, setresultvalue] = useState([]);
@@ -28,10 +28,7 @@ export default function OrderDetail() {
   const records = resultvalue.slice(firstIndex, lastIndex);
   const pages = Math.ceil(resultvalue.length / recordsPerPage);
 
-  var numbers = Array.from(
-    { length: Math.min(5, pages) },
-    (_, i) => startPage + i
-  );
+  var numbers = Array.from({ length: Math.min(5, pages) }, (_, i) => startPage + i);
 
   const prePage = () => {
     if (currentPage !== 1) {
@@ -69,7 +66,7 @@ export default function OrderDetail() {
     return url;
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     const fetchdata = async () => {
       try {
         const response = await axiosAdmin.get("OrderDetail/GetByOrderId/" + id);
@@ -78,64 +75,69 @@ export default function OrderDetail() {
         const dataresponse = response.data.data;
         setresultvalue(dataresponse);
         setData(dataresponse);
-        
-      
       } catch (error) {
         message.error("Error: " + error);
       } finally {
       }
     };
     fetchdata();
-  },[])
+  }, []);
 
   return (
-    <>
-    <div className="container" style={{marginTop:"3%"}} >
-    <h2>Order {id}.</h2>
-  
-     <div>
-     <Table className="table table-dark table-striped">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Image</th>
-            <th>Color</th>
-            <th>Size</th>
-            <th>Material</th>
-            <th>Price</th>
-          </tr>
-        </thead>
-        <tbody>
-          {records?.map((item, index) => (
-            <tr
-              key={index}
-              style={{ height: "100%", backgroundColor: "yellow" }}
-            >
-             
-        
-              <td>{item.product}</td>
-              <td>
-              <img
-                    style={{ height: "80px", width: "80px" }}
-                    src={getFirebaseImageUrl(item.image)}
-                    alt="img"
-                  />
-              </td>
-            
-              <td> {item.type.filter((e) => e.attributetype == "Color").map((filteredItem) => (
-                    <div key={filteredItem.id}>{filteredItem.attributevalue}</div>
-                  ))
-              }</td>
-              <td> {item.type.filter((e) => e.attributetype == "Size").map((filteredItem) => (
-                    <div key={filteredItem.id}>{filteredItem.attributevalue}</div>
-                  ))
-              }</td>
-              <td> {item.type.filter((e) => e.attributetype == "Material").map((filteredItem) => (
-                    <div key={filteredItem.id}>{filteredItem.attributevalue}</div>
-                  ))
-              }</td>
-              <td>{item.price}</td>
-              {/* <td>
+    <Container>
+      <div className="container" style={{ marginTop: "3%" }}>
+        <h2>Order {id}.</h2>
+
+        <div>
+          <Table className="table table-dark table-striped">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Image</th>
+                <th>Color</th>
+                <th>Size</th>
+                <th>Material</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records?.map((item, index) => (
+                <tr key={index} style={{ height: "100%", backgroundColor: "yellow" }}>
+                  <td>{item.product}</td>
+                  <td>
+                    <img
+                      style={{ height: "80px", width: "80px" }}
+                      src={getFirebaseImageUrl(item.image)}
+                      alt="img"
+                    />
+                  </td>
+
+                  <td>
+                    {" "}
+                    {item.type
+                      .filter((e) => e.attributetype == "Color")
+                      .map((filteredItem) => (
+                        <div key={filteredItem.id}>{filteredItem.attributevalue}</div>
+                      ))}
+                  </td>
+                  <td>
+                    {" "}
+                    {item.type
+                      .filter((e) => e.attributetype == "Size")
+                      .map((filteredItem) => (
+                        <div key={filteredItem.id}>{filteredItem.attributevalue}</div>
+                      ))}
+                  </td>
+                  <td>
+                    {" "}
+                    {item.type
+                      .filter((e) => e.attributetype == "Material")
+                      .map((filteredItem) => (
+                        <div key={filteredItem.id}>{filteredItem.attributevalue}</div>
+                      ))}
+                  </td>
+                  <td>{item.price}</td>
+                  {/* <td>
             {item.status !== undefined
               ? item.status === true
                 ? "Active"
@@ -144,55 +146,46 @@ export default function OrderDetail() {
               ? "Active"
               : "Disable"}
           </td> */}
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-      <nav>
-          <ul className="pagination">
-            <li className="page-item">
-              <Link href="#" className="page-link" onClick={firstpage}>
-                First Page.
-              </Link>
-            </li>
-            <li className="page-item">
-              <Link href="#" className="page-link" onClick={prePage}>
-                Prev
-              </Link>
-            </li>
-            {numbers.map((n, i) => (
-              <li
-                className={`page-item ${currentPage === n ? "active" : ""}`}
-                key={i}
-              >
-                <Link
-                  href="#"
-                  className="page-link"
-                  onClick={() => changeCurrentPage(n)}
-                >
-                  {n}
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+          <nav>
+            <ul className="pagination">
+              <li className="page-item">
+                <Link href="#" className="page-link" onClick={firstpage}>
+                  First Page.
                 </Link>
               </li>
-            ))}
-            <li className="page-item">
-              <Link href="#" className="page-link" onClick={NextPage}>
-                Next
-              </Link>
-            </li>
-            <li className="page-item">
-              <Link href="#" className="page-link" onClick={lastpage}>
-                Last Page.
-              </Link>
-            </li>
-            <li className="page-item">
-              <p className="page-link">{currentPage + "/" + pages}</p>
-            </li>
-          </ul>
-        </nav>
-     </div>
-    </div>
-   
-    
-    </>
-  )
+              <li className="page-item">
+                <Link href="#" className="page-link" onClick={prePage}>
+                  Prev
+                </Link>
+              </li>
+              {numbers.map((n, i) => (
+                <li className={`page-item ${currentPage === n ? "active" : ""}`} key={i}>
+                  <Link href="#" className="page-link" onClick={() => changeCurrentPage(n)}>
+                    {n}
+                  </Link>
+                </li>
+              ))}
+              <li className="page-item">
+                <Link href="#" className="page-link" onClick={NextPage}>
+                  Next
+                </Link>
+              </li>
+              <li className="page-item">
+                <Link href="#" className="page-link" onClick={lastpage}>
+                  Last Page.
+                </Link>
+              </li>
+              <li className="page-item">
+                <p className="page-link">{currentPage + "/" + pages}</p>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </Container>
+  );
 }

@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { getProductQuerySelect } from "./api/galleryApi";
 import { Button, Form, Upload, Input, Select, message, InputNumber, Radio } from "antd";
-
+import styled from "styled-components";
 import axiosAdmin from "@/shared/api/axiosAdmin";
 import { PlusOutlined } from "@ant-design/icons";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useNavigate } from "react-router-dom";
-
 import SelectReact from "react-select";
 import makeAnimated from "react-select/animated";
 
@@ -19,6 +18,13 @@ const op = [
   { value: 3, label: "Green" },
   { value: 4, label: "Black" },
 ];
+
+const Container = styled.div`
+  margin: 1rem;
+  margin-bottom: 3rem;
+  padding: 1rem;
+  background-color: white;
+`;
 
 export default function Gallery() {
   const getProductQuery = getProductQuerySelect();
@@ -158,11 +164,8 @@ export default function Gallery() {
   const [product, setProduct] = useState([]);
 
   return (
-    <>
-      <div
-        className="container my-5"
-        style={{ height: "auto", width: "70%", marginLeft: "25%", marginTop: "2%" }}
-      >
+    <Container>
+      <div className="container my-5" style={{ height: "auto", width: "90%" }}>
         <h1 className="mb-4">Create New Gallery.</h1>
         <Form form={form} layout="vertical" onFinish={handleCreate}>
           <Form.Item
@@ -244,6 +247,6 @@ export default function Gallery() {
           </Form.Item>
         </Form>
       </div>
-    </>
+    </Container>
   );
 }

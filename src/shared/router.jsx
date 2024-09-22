@@ -17,12 +17,20 @@ import DesignerList from "@/features/designer_list/DesignerList";
 import DesignerProfile from "@/features/designer_profile/DesignerProfile";
 import DesignerConsultation from "@/features/designer_consultation/DesignerConsultation";
 import ProductList from "@/features/product_list/ProductList";
+import ForgotPassword from "@/features/forgot_password/ForgotPassword";
+import Forgot from "@/features/forgot/Forgot";
 
 import Gallery from "@/features/gallery/gallery";
 import GalleryList from "@/features/gallery_list/GalleryList";
 import Order from "@/features/Order/Order";
 import UpdateGallery from "@/features/UpdateGallery/UpdateGallery";
 import OrderDetail from "@/features/OrderDetail/OrderDetail";
+
+import Blogs from "@/features/blog/Blogs";
+import CreateBlog from "@/features/blog/components/CreateBlog";
+import Blog from "@/features/blog/components/Blog";
+
+import AdminConsultationList from "@/features/admin_consultation_list/AdminConsultationList";
 
 const router = createBrowserRouter([
   {
@@ -109,7 +117,31 @@ const router = createBrowserRouter([
         path: "/order_detail",
         element: <OrderDetail />,
       },
+      {
+        path: "/blog",
+        element: <Blogs />,
+      },
+      {
+        path: "/getblogbyid",
+        element: <Blog />,
+      },
+      {
+        path: "/create_blog",
+        element: <CreateBlog />,
+      },
+      {
+        path: "/admin_consultion_list",
+        element: <AdminConsultationList />,
+      },
     ],
+  },
+  {
+    path: "/forgotPassword",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/forgot",
+    element: <Forgot />,
   },
   {
     path: "/login",

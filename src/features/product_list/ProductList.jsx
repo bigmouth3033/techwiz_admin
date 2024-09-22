@@ -13,6 +13,9 @@ import brandOptions from "../product/data/optionsBrand";
 import optionsFunction from "../product/data/optionsFunction";
 import SelectReact from "react-select";
 import InputCheckBox from "@/shared/components/Input/InputCheckBox";
+import { changeProductStatusRequest } from "./api/productListApi";
+import ConfirmPopUp from "@/shared/components/PopUp/ConfirmPopUp";
+import { Form } from "react-router-dom";
 
 const Container = styled.div`
   background-color: white;
@@ -197,11 +200,14 @@ const FilterDropDown = styled.div`
 `;
 
 export default function ProductList() {
+  const changeProductStatus = changeProductStatusRequest();
   const [search, setSeach] = useState("");
   const [filterBrand, setFilterBrand] = useState();
   const [filterFunc, setFilterFunc] = useState();
   const [filterStatus, setFilterStatus] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isConfirm, setIsConfirm] = useState();
+
   const getProductList = getProductListRequest(
     currentPage,
     10,
@@ -212,98 +218,128 @@ export default function ProductList() {
   );
   const [isFilterDropDown, setIsFilterDropDown] = useState(false);
 
+  const onChangeStatus = (productId) => {
+    const formData = new FormData();
+
+    formData.append("productId", productId);
+
+    changeProductStatus.mutate(formData, {
+      onSuccess: (response) => {
+        if (response.status == 200) {
+          getProductList.refetch();
+          setIsConfirm();
+        }
+      },
+    });
+  };
+
   return (
-    <Container>
-      {getProductList.isLoading && (
-        <WaitingContainer>
-          <WaitingIcon />
-        </WaitingContainer>
-      )}
-
-      <SearchContainer>
-        <FilterBox>
-          <Button1 onClick={() => setIsFilterDropDown((prev) => !prev)}>Filter Option</Button1>
-          {isFilterDropDown && (
-            <FilterDropDown>
-              <div>
-                <h5>Brand filter</h5>
-                <SelectReact
-                  value={filterBrand}
-                  onChange={setFilterBrand}
-                  closeMenuOnSelect={false}
-                  isMulti
-                  options={brandOptions}
-                />
-              </div>
-              <div>
-                <h5>Functionality filter</h5>
-                <SelectReact
-                  value={filterFunc}
-                  onChange={setFilterFunc}
-                  closeMenuOnSelect={false}
-                  isMulti
-                  options={optionsFunction}
-                />
-              </div>
-              <div className="active_filter">
-                <InputCheckBox
-                  checked={filterStatus}
-                  onChange={() => setFilterStatus((prev) => !prev)}
-                />{" "}
-                Active
-              </div>
-            </FilterDropDown>
-          )}
-        </FilterBox>
-
-        <TextInput state={search} setState={setSeach} placeholder={"Search"} />
-      </SearchContainer>
-
-      <TableContent>
-        <thead>
-          <tr>
-            <th>Product Id</th>
-            <th>Product</th>
-            <th>Brand</th>
-            <th>Functionality</th>
-            <th>Added Date</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {getProductList.isSuccess &&
-            getProductList.data.data.map((item, index) => {
-              return (
-                <tr key={index}>
-                  <td>{item._productCode}</td>
-                  <td>
-                    <ProductColumn>
-                      <Avatar round size="50" src={getFirebaseImageUrl(item.imageName)} />{" "}
-                      <div>
-                        <span>{item.productname}</span>
-                        <span>{item.variants.length} variants</span>
-                      </div>
-                    </ProductColumn>
-                  </td>
-                  <td>{item.brand}</td>
-                  <td>{item.functionality.name}</td>
-                  <td>{formatDate(item.created_at)}</td>
-                  <td>{item.status ? <Active>Active</Active> : <Deactive>Inactive</Deactive>}</td>
-                </tr>
-              );
-            })}
-        </tbody>
-      </TableContent>
-
-      <Footer>
-        {getProductList.isSuccess && (
-          <Pagination
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            totalPage={getProductList.data.totalPages}
-          />
+    <>
+      <Container>
+        {getProductList.isLoading && (
+          <WaitingContainer>
+            <WaitingIcon />
+          </WaitingContainer>
         )}
-      </Footer>
-    </Container>
+
+        <SearchContainer>
+          <FilterBox>
+            <Button1 onClick={() => setIsFilterDropDown((prev) => !prev)}>Filter Option</Button1>
+            {isFilterDropDown && (
+              <FilterDropDown>
+                <div>
+                  <h5>Brand filter</h5>
+                  <SelectReact
+                    value={filterBrand}
+                    onChange={setFilterBrand}
+                    closeMenuOnSelect={false}
+                    isMulti
+                    options={brandOptions}
+                  />
+                </div>
+                <div>
+                  <h5>Functionality filter</h5>
+                  <SelectReact
+                    value={filterFunc}
+                    onChange={setFilterFunc}
+                    closeMenuOnSelect={false}
+                    isMulti
+                    options={optionsFunction}
+                  />
+                </div>
+                <div className="active_filter">
+                  <InputCheckBox
+                    checked={filterStatus}
+                    onChange={() => setFilterStatus((prev) => !prev)}
+                  />{" "}
+                  Active
+                </div>
+              </FilterDropDown>
+            )}
+          </FilterBox>
+
+          <TextInput state={search} setState={setSeach} placeholder={"Search"} />
+        </SearchContainer>
+
+        <TableContent>
+          <thead>
+            <tr>
+              <th>Product Id</th>
+              <th>Product</th>
+              <th>Brand</th>
+              <th>Functionality</th>
+              <th>Added Date</th>
+              <th>Status</th>
+              <th>ACTION</th>
+            </tr>
+          </thead>
+          <tbody>
+            {getProductList.isSuccess &&
+              getProductList.data.data.map((item, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{item._productCode}</td>
+                    <td>
+                      <ProductColumn>
+                        <Avatar round size="50" src={getFirebaseImageUrl(item.imageName)} />{" "}
+                        <div>
+                          <span>{item.productname}</span>
+                          <span>{item.variants.length} variants</span>
+                        </div>
+                      </ProductColumn>
+                    </td>
+                    <td>{item.brand}</td>
+                    <td>{item.functionality.name}</td>
+                    <td>{formatDate(item.created_at)}</td>
+                    <td>{item.status ? <Active>Active</Active> : <Deactive>Inactive</Deactive>}</td>
+                    <td>
+                      <Button2 onClick={() => setIsConfirm(item.id)}>
+                        {item.status ? "Deactive" : "Activate"}
+                      </Button2>
+                    </td>
+                  </tr>
+                );
+              })}
+          </tbody>
+        </TableContent>
+
+        <Footer>
+          {getProductList.isSuccess && (
+            <Pagination
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPage={getProductList.data.totalPages}
+            />
+          )}
+        </Footer>
+      </Container>
+      {isConfirm && (
+        <ConfirmPopUp
+          cancel={() => setIsConfirm()}
+          message={"confirm?"}
+          confirm={() => onChangeStatus(isConfirm)}
+        />
+      )}
+    </>
   );
 }

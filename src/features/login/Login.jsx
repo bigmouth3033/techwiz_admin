@@ -9,12 +9,17 @@ import SuccessPopUp from "@/shared/components/PopUp/SuccessPopUp";
 import { useNavigate } from "react-router-dom";
 import ErrorPopUp from "@/shared/components/PopUp/ErrorPopUp";
 import Button1 from "@/shared/components/Button/Button1";
-import background from "./assets/images/simple_background.png";
+import background from "./assets/images/background.jpg";
 
 const Container = styled.div`
   height: 100vh;
 
   background: url(${background});
+
+  & h5 {
+    font-size: 16px;
+    font-weight: 600;
+  }
 `;
 
 const LoginForm = styled.form`
@@ -34,11 +39,24 @@ const InputContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+
+  > label {
+    font-size: 17px;
+  }
 `;
 
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: flex-end;
+  align-items: flex-end;
+  gap: 1rem;
+
+  > p {
+    &:hover {
+      text-decoration: underline;
+    }
+    cursor: pointer;
+  }
 
   > button {
     /* background-color: white;
@@ -49,6 +67,7 @@ const ButtonContainer = styled.div`
 const CustomInput = styled(TextInput)`
   padding: 6px;
   width: 20rem;
+  height: 3rem;
 `;
 
 const HeaderContainer = styled.div`
@@ -173,6 +192,7 @@ export default function Login() {
           </InputContainer>
           {errors.password && <h5>{errors.password}</h5>}
           <ButtonContainer>
+            <p onClick={() => navigate("/forgot")}>Forgot your password</p>
             <Button1 onClick={onLogin}>Login</Button1>
           </ButtonContainer>
         </LoginForm>

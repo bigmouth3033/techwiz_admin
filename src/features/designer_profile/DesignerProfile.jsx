@@ -125,6 +125,11 @@ const DateOfWorkContainer = styled.div`
   gap: 2rem;
   padding: 0 2rem;
 
+  & p {
+    margin: 0;
+    padding: 0;
+  }
+
   > div {
     display: flex;
     gap: 1rem;
@@ -161,13 +166,13 @@ export default function DesignerProfile() {
   const [alert, setAlert] = useState("");
 
   const [dow, setDow] = useState({
-    t2: false,
-    t3: false,
-    t4: false,
-    t5: false,
-    t6: false,
-    t7: false,
-    cn: false,
+    Mon: false,
+    Tue: false,
+    Wed: false,
+    Thu: false,
+    Fri: false,
+    Sat: false,
+    Sun: false,
   });
 
   const onUpdatePorfolio = () => {
@@ -196,9 +201,9 @@ export default function DesignerProfile() {
       }
     }
 
-    dowArr = dowArr.join(",");
+    dowArr = dowArr.join("-");
 
-    formData.append("dow", dowArr ? dowArr : ",");
+    formData.append("dow", dowArr ? dowArr : "-");
 
     updateDowDesigner.mutate(formData, {
       onSuccess: (response) => {
@@ -380,7 +385,7 @@ export default function DesignerProfile() {
       setYear(data.yearsofexperience);
       setPortfolio(data.portfolio);
 
-      const dowQuery = data.daywork.split(",");
+      const dowQuery = data.daywork.split("-");
 
       for (let item of dowQuery) {
         setDow((prev) => {
@@ -501,10 +506,10 @@ export default function DesignerProfile() {
                     <InputCheckBox
                       onChange={() =>
                         setDow((prev) => {
-                          return { ...prev, t2: !prev.t2 };
+                          return { ...prev, Mon: !prev.Mon };
                         })
                       }
-                      checked={dow.t2}
+                      checked={dow.Mon}
                     />
                     <p>Monday</p>
                   </div>
@@ -512,10 +517,10 @@ export default function DesignerProfile() {
                     <InputCheckBox
                       onChange={() =>
                         setDow((prev) => {
-                          return { ...prev, t3: !prev.t3 };
+                          return { ...prev, Tue: !prev.Tue };
                         })
                       }
-                      checked={dow.t3}
+                      checked={dow.Tue}
                     />
                     <p>Tuesday</p>
                   </div>
@@ -523,10 +528,10 @@ export default function DesignerProfile() {
                     <InputCheckBox
                       onChange={() =>
                         setDow((prev) => {
-                          return { ...prev, t4: !prev.t4 };
+                          return { ...prev, Wed: !prev.Wed };
                         })
                       }
-                      checked={dow.t4}
+                      checked={dow.Wed}
                     />
                     <p>Wednesday</p>
                   </div>
@@ -534,10 +539,10 @@ export default function DesignerProfile() {
                     <InputCheckBox
                       onChange={() =>
                         setDow((prev) => {
-                          return { ...prev, t5: !prev.t5 };
+                          return { ...prev, Thu: !prev.Thu };
                         })
                       }
-                      checked={dow.t5}
+                      checked={dow.Thu}
                     />
                     <p>Thursday</p>
                   </div>
@@ -545,10 +550,10 @@ export default function DesignerProfile() {
                     <InputCheckBox
                       onChange={() =>
                         setDow((prev) => {
-                          return { ...prev, t6: !prev.t6 };
+                          return { ...prev, Fri: !prev.Fri };
                         })
                       }
-                      checked={dow.t6}
+                      checked={dow.Fri}
                     />
                     <p>Friday</p>
                   </div>
@@ -556,10 +561,10 @@ export default function DesignerProfile() {
                     <InputCheckBox
                       onChange={() =>
                         setDow((prev) => {
-                          return { ...prev, t7: !prev.t7 };
+                          return { ...prev, Sat: !prev.Sat };
                         })
                       }
-                      checked={dow.t7}
+                      checked={dow.Sat}
                     />
                     <p>Saturday</p>
                   </div>
@@ -567,10 +572,10 @@ export default function DesignerProfile() {
                     <InputCheckBox
                       onChange={() =>
                         setDow((prev) => {
-                          return { ...prev, cn: !prev.cn };
+                          return { ...prev, Sun: !prev.Sun };
                         })
                       }
-                      checked={dow.cn}
+                      checked={dow.Sun}
                     />
                     <p>Sunday</p>
                   </div>

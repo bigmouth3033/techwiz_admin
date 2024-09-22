@@ -5,5 +5,5 @@ const Container = styled.div`
 `;
 
 export default function Dashboard() {
-  return <Container>dashboard</Container>;
+  return <Container></Container>;
 }

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosAdmin from "@/shared/api/axiosAdmin";
 import qs from "qs";
 
@@ -32,5 +32,16 @@ export const getProductListRequest = (
       return request(pageNumber, pageSize, active, functionalityId, brand, search);
     },
     retry: 0,
+  });
+};
+
+export const changeProductStatusRequest = () => {
+  const request = async (payload) => {
+    const response = await axiosAdmin.put("ProductAdmin/change_product_status", payload);
+    return response.data;
+  };
+
+  return useMutation({
+    mutationFn: request,
   });
 };

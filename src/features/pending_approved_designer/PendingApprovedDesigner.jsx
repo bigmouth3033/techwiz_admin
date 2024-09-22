@@ -11,6 +11,10 @@ import { denyDesignerRequest } from "./api/pendingApprovedApi";
 import ConfirmPopUp from "@/shared/components/PopUp/ConfirmPopUp";
 import TextEditor from "../product/components/TextEditor/TextEditor";
 import PopUp from "@/shared/components/PopUp/PopUp";
+import TextInput from "@/shared/components/Input/TextInput";
+import Button1 from "@/shared/components/Button/Button1";
+import SelectReact from "react-select";
+import NumberInput from "@/shared/components/Input/NumberInput";
 
 const Container = styled.div`
   background-color: white;
@@ -128,6 +132,42 @@ const PermissionColumn = styled.div`
   }
 `;
 
+const SearchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+`;
+
+const FilterBox = styled.div`
+  position: relative;
+  > button {
+    width: max-content;
+  }
+`;
+
+const FilterDropDown = styled.div`
+  margin-top: 5px;
+  background-color: white;
+  position: absolute;
+  width: 200%;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  padding: 1rem;
+
+  h5 {
+    font-size: 16px;
+  }
+
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  & .active_filter {
+    display: flex;
+    gap: 1rem;
+  }
+`;
+
 const ButtonContainer = styled.div`
   display: flex;
   gap: 10px;
@@ -141,10 +181,13 @@ export default function PendingApprovedDesigner() {
   const [currentPage, setCurrentPage] = useState(1);
   const approveDesigner = approveDesignerRequest();
   const denyDesigner = denyDesignerRequest();
-  const getPendingApproved = getPendingApprovedRequest(currentPage, 10);
+  const [search, setSearch] = useState("");
+  const getPendingApproved = getPendingApprovedRequest(currentPage, 10, search);
   const [approveConfirm, setApproveConfirm] = useState();
   const [denyConfirm, setDenyConfirm] = useState();
   const [isPopUp, setIsPopUp] = useState();
+  const [isFilterDropDown, setIsFilterDropDown] = useState(false);
+  const [from, setFrom] = useState(0);
 
   const onApprove = (designerId) => {
     const formData = new FormData();
@@ -154,8 +197,8 @@ export default function PendingApprovedDesigner() {
     approveDesigner.mutate(formData, {
       onSuccess: (response) => {
         if (response.status == 200) {
-          setApproveConfirm();
           getPendingApproved.refetch();
+          setApproveConfirm(false);
         }
       },
     });
@@ -169,8 +212,8 @@ export default function PendingApprovedDesigner() {
     denyDesigner.mutate(formData, {
       onSuccess: (response) => {
         if (response.status == 200) {
-          setDenyConfirm();
           getPendingApproved.refetch();
+          setDenyConfirm(false);
         }
       },
     });
@@ -185,6 +228,9 @@ export default function PendingApprovedDesigner() {
           </WaitingContainer>
         )}
 
+        <SearchContainer>
+          <TextInput state={search} setState={setSearch} placeholder={"Search"} />
+        </SearchContainer>
         {getPendingApproved.isSuccess && (
           <TableContent>
             <thead>
@@ -235,7 +281,6 @@ export default function PendingApprovedDesigner() {
             </tbody>
           </TableContent>
         )}
-
         <Footer>
           {getPendingApproved.isSuccess && (
             <Pagination

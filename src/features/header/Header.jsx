@@ -14,6 +14,9 @@ import { Link } from "react-router-dom";
 import { adminRequest } from "@/shared/api/adminApi";
 import Cookies from "js-cookie";
 import getFirebaseImageUrl from "@/shared/utils/getFireBaseImage";
+import PopUp from "@/shared/components/PopUp/PopUp";
+import Button1 from "@/shared/components/Button/Button1";
+import { changePasswordRequest } from "./api/resetPasswordApi";
 
 const Container = styled.div`
   position: sticky;
@@ -70,7 +73,8 @@ const DropDown = styled.div`
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
   margin-top: 1rem;
   width: 7rem;
-  transform: translateX(-10px);
+  transform: translateX(10px);
+  width: max-content;
 `;
 
 const DropDownButton = styled.button`
@@ -79,6 +83,7 @@ const DropDownButton = styled.button`
   align-items: center;
   gap: 1rem;
   background-color: white;
+
   border: none;
   font-size: 14px;
   padding: 0.5rem;
@@ -143,6 +148,7 @@ const SearchOption = styled(Link)`
 `;
 
 export default function Header({ isSideBarSmall, setIsSideBarSmall }) {
+  const [isPopUp, setIsPopUp] = useState(false);
   const location = useLocation();
   const [dropDown, setDropDown] = useState(false);
   const dropDownRef = useRef();
@@ -204,57 +210,124 @@ export default function Header({ isSideBarSmall, setIsSideBarSmall }) {
   };
 
   return (
-    <Container>
-      <Left>
-        <HideShowButton onClick={() => setIsSideBarSmall((prev) => !prev)}>
-          {!isSideBarSmall ? <FaBars /> : <FaArrowRight />}
-        </HideShowButton>
-        <p>{currentPage}</p>
-      </Left>
-      <Right>
-        <ProfileGroup ref={dropDownButton}>
-          <Profile onClick={() => setDropDown((prev) => !prev)}>
-            <div>
-              <p>{admin.data.data.userdetails ? "Admin" : "Designer"}</p>
-              <h5>
-                {(admin.data.data.userdetails
-                  ? admin.data.data.userdetails.first_name
-                  : admin.data.data.interiordesigner.first_name) +
-                  " " +
-                  (admin.data.data.userdetails
-                    ? admin.data.data.userdetails.last_name
-                    : admin.data.data.interiordesigner.last_name)}
-              </h5>
-            </div>
-            <Avatar
-              name={
-                admin.data.data.userdetails != null
-                  ? admin.data.data.userdetails.first_name
-                  : admin.data.data.interiordesigner.first_name
-              }
-              src={getFirebaseImageUrl(
-                admin.data.data.userdetails
-                  ? admin.data.data.userdetails.avatar
-                  : admin.data.data.interiordesigner.avatar
-              )}
-              size="40"
-              round
-            />
-          </Profile>
-          {dropDown && (
-            <DropDown ref={dropDownRef}>
-              <DropDownButton>
-                <CiUser />
-                Profile
-              </DropDownButton>
-              <DropDownButton onClick={onLogout}>
-                <CiLogout />
-                Log out
-              </DropDownButton>
-            </DropDown>
-          )}
-        </ProfileGroup>
-      </Right>
-    </Container>
+    <>
+      <Container>
+        <Left>
+          <HideShowButton onClick={() => setIsSideBarSmall((prev) => !prev)}>
+            {!isSideBarSmall ? <FaBars /> : <FaArrowRight />}
+          </HideShowButton>
+          <p>{currentPage}</p>
+        </Left>
+        <Right>
+          <ProfileGroup ref={dropDownButton}>
+            <Profile onClick={() => setDropDown((prev) => !prev)}>
+              <div>
+                <p>{admin.data.data.userdetails ? "Admin" : "Designer"}</p>
+                <h5>
+                  {(admin.data.data.userdetails
+                    ? admin.data.data.userdetails.first_name
+                    : admin.data.data.interiordesigner.first_name) +
+                    " " +
+                    (admin.data.data.userdetails
+                      ? admin.data.data.userdetails.last_name
+                      : admin.data.data.interiordesigner.last_name)}
+                </h5>
+              </div>
+              <Avatar
+                name={
+                  admin.data.data.userdetails != null
+                    ? admin.data.data.userdetails.first_name
+                    : admin.data.data.interiordesigner.first_name
+                }
+                src={getFirebaseImageUrl(
+                  admin.data.data.userdetails
+                    ? admin.data.data.userdetails.avatar
+                    : admin.data.data.interiordesigner.avatar
+                )}
+                size="40"
+                round
+              />
+            </Profile>
+            {dropDown && (
+              <DropDown ref={dropDownRef}>
+                <DropDownButton onClick={() => setIsPopUp(true)}>Reset password</DropDownButton>
+                <DropDownButton onClick={onLogout}>
+                  <CiLogout />
+                  Log out
+                </DropDownButton>
+              </DropDown>
+            )}
+          </ProfileGroup>
+        </Right>
+      </Container>
+      {isPopUp && <ResetPopUp action={() => setIsPopUp(false)} />}
+    </>
+  );
+}
+
+const CustomPopup = styled(PopUp)`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+`;
+
+function ResetPopUp({ action }) {
+  const [previous, setPrevious] = useState();
+  const [newPassword, setNewPassword] = useState();
+  const [confirm, setConfirm] = useState();
+
+  const changePassword = changePasswordRequest();
+
+  const onResetPassword = () => {
+    if (!newPassword || !previous) {
+      alert("input password");
+      return;
+    }
+
+    if (newPassword && newPassword != confirm) {
+      alert("wrong password confirm");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("previous", previous);
+    formData.append("newPassword", newPassword);
+
+    changePassword.mutate(formData, {
+      onSuccess: (response) => {
+        if (response.status == 200) {
+          window.alert("success");
+          action();
+        } else {
+          console.log(response);
+          window.alert("wrong password");
+        }
+      },
+    });
+  };
+
+  return (
+    <CustomPopup action={() => {}}>
+      <div>
+        <label>Previous password</label>
+        <TextInput type="password" state={previous} setState={setPrevious} />
+      </div>
+      <div>
+        <label>New password</label>
+        <TextInput type="password" state={newPassword} setState={setNewPassword} />
+      </div>
+      <div>
+        <label>Password confirm</label>
+        <TextInput type="password" state={confirm} setState={setConfirm} />
+      </div>
+      <ButtonContainer>
+        <Button1 onClick={onResetPassword}>Reset Password</Button1>
+        <Button1 onClick={action}>Cancel</Button1>
+      </ButtonContainer>
+    </CustomPopup>
   );
 }

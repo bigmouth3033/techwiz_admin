@@ -47,3 +47,24 @@ export const denyConsultationRequest = () => {
     mutationFn: request,
   });
 };
+
+export const getCustomerOrderListRequest = (pageNumber, pageSize, userId) => {
+  const request = async () => {
+    const response = await axiosAdmin.get("OrderAdmin/get_user_order_history", {
+      params: {
+        pageNumber,
+        pageSize,
+        userId,
+      },
+    });
+
+    return response.data;
+  };
+
+  return useQuery({
+    queryKey: ["user_order_list", pageNumber, pageSize, userId],
+    queryFn: () => {
+      return request(pageNumber, pageSize, userId);
+    },
+  });
+};
