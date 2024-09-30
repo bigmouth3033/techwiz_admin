@@ -11,6 +11,9 @@ import { getApprovedDesignerRequest } from "./api/designerListApi";
 import { changeDesignerStatusRequest } from "./api/designerListApi";
 import ConfirmPopUp from "@/shared/components/PopUp/ConfirmPopUp";
 import TextInput from "@/shared/components/Input/TextInput";
+import Button1 from "@/shared/components/Button/Button1";
+import { useNavigate } from "react-router-dom";
+import SelectInput from "@/shared/components/Input/SelectInput";
 
 const Container = styled.div`
   background-color: white;
@@ -143,10 +146,68 @@ const CustomButton2 = styled(Button2)`
   width: 80px;
 `;
 
+const FilterBox = styled.div`
+  position: relative;
+  > button {
+    width: max-content;
+  }
+`;
+
+const FilterDropDown = styled.div`
+  margin-top: 5px;
+  background-color: white;
+  position: absolute;
+  width: 200%;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  padding: 1rem;
+
+  h5 {
+    font-size: 16px;
+  }
+
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  & .active_filter {
+    display: flex;
+    gap: 1rem;
+  }
+
+  > div {
+    > div {
+      display: flex;
+      gap: 1rem;
+    }
+  }
+`;
+
+const activeOptions = [
+  { label: "Active", value: true },
+  { label: "Not active", value: false },
+];
+
+const CustomSelectInput = styled(SelectInput)`
+  width: 15rem;
+`;
+
 export default function DesignerList() {
+  const navigate = useNavigate();
+  const [isFilterDropDown, setIsFilterDropDown] = useState(false);
+  const [rangeValue, setRangeValue] = useState(0);
+  const [specializeSearch, setSpecializeSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
-  const getApprovedDesigner = getApprovedDesignerRequest(currentPage, 10, search);
+  const [active, setActive] = useState(activeOptions[0]);
+  const getApprovedDesigner = getApprovedDesignerRequest(
+    currentPage,
+    10,
+    rangeValue,
+    active.value,
+    specializeSearch,
+    search
+  );
   const changeDesignerStatus = changeDesignerStatusRequest();
   const [isPopUp, setIsPopUp] = useState();
   const [isConfirm, setIsConfirm] = useState();
@@ -176,7 +237,40 @@ export default function DesignerList() {
         )}
 
         <SearchContainer>
-          <TextInput state={search} setState={setSearch} placeholder={"Search"} />
+          <FilterBox>
+            <Button1 onClick={() => setIsFilterDropDown((prev) => !prev)}>Filter Option</Button1>
+            {isFilterDropDown && (
+              <FilterDropDown>
+                <div>
+                  <h5>Year of experience from: </h5>
+                  <div>
+                    <input
+                      value={rangeValue}
+                      onChange={(ev) => setRangeValue(ev.target.value)}
+                      type="range"
+                      min={0}
+                      max={100}
+                    />
+                    <span>{rangeValue}</span>
+                  </div>
+                </div>
+                <div>
+                  <h5>Specialize</h5>
+                  <TextInput
+                    state={specializeSearch}
+                    setState={setSpecializeSearch}
+                    placeholder={"Search for specialization"}
+                  />
+                </div>
+              </FilterDropDown>
+            )}
+          </FilterBox>
+          <TextInput
+            state={search}
+            setState={setSearch}
+            placeholder={"Search for name, address, email"}
+          />
+          <CustomSelectInput state={active} setState={setActive} options={activeOptions} />
         </SearchContainer>
         {getApprovedDesigner.isSuccess && (
           <TableContent>
@@ -219,8 +313,10 @@ export default function DesignerList() {
                         <CustomButton2 onClick={() => setIsConfirm(item.id)}>
                           {item.status ? "Deactive" : "Active"}
                         </CustomButton2>
-                        <CustomButton2 onClick={() => setIsPopUp(item.portfolio)}>
-                          Portfolio
+                        <CustomButton2
+                          onClick={() => navigate("/designer_detail?id=" + item.user_id)}
+                        >
+                          Detail
                         </CustomButton2>
                       </ButtonContainer>
                     </td>

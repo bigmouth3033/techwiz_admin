@@ -15,7 +15,8 @@ import SelectReact from "react-select";
 import InputCheckBox from "@/shared/components/Input/InputCheckBox";
 import { changeProductStatusRequest } from "./api/productListApi";
 import ConfirmPopUp from "@/shared/components/PopUp/ConfirmPopUp";
-import { Form } from "react-router-dom";
+import getWords from "@/shared/utils/getWords";
+import SelectInput from "@/shared/components/Input/SelectInput";
 
 const Container = styled.div`
   background-color: white;
@@ -199,19 +200,29 @@ const FilterDropDown = styled.div`
   }
 `;
 
+const CustomSelectInput = styled(SelectInput)`
+  width: 15rem;
+`;
+
+const activeOptions = [
+  { label: "Active", value: true },
+  { label: "Not active", value: false },
+];
+
 export default function ProductList() {
+  const [active, setActive] = useState(activeOptions[0]);
   const changeProductStatus = changeProductStatusRequest();
   const [search, setSeach] = useState("");
   const [filterBrand, setFilterBrand] = useState();
   const [filterFunc, setFilterFunc] = useState();
-  const [filterStatus, setFilterStatus] = useState(true);
+  const [filterStatus, setFilterStatus] = useState(activeOptions[0]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isConfirm, setIsConfirm] = useState();
 
   const getProductList = getProductListRequest(
     currentPage,
     10,
-    filterStatus,
+    filterStatus.value,
     filterFunc?.map((item) => item.value),
     filterBrand?.map((item) => item.value),
     search
@@ -267,24 +278,20 @@ export default function ProductList() {
                     options={optionsFunction}
                   />
                 </div>
-                <div className="active_filter">
-                  <InputCheckBox
-                    checked={filterStatus}
-                    onChange={() => setFilterStatus((prev) => !prev)}
-                  />{" "}
-                  Active
-                </div>
               </FilterDropDown>
             )}
           </FilterBox>
-
           <TextInput state={search} setState={setSeach} placeholder={"Search"} />
+          <CustomSelectInput
+            state={filterStatus}
+            setState={setFilterStatus}
+            options={activeOptions}
+          />
         </SearchContainer>
 
         <TableContent>
           <thead>
             <tr>
-              <th>Product Id</th>
               <th>Product</th>
               <th>Brand</th>
               <th>Functionality</th>
@@ -298,12 +305,11 @@ export default function ProductList() {
               getProductList.data.data.map((item, index) => {
                 return (
                   <tr key={index}>
-                    <td>{item._productCode}</td>
                     <td>
                       <ProductColumn>
                         <Avatar round size="50" src={getFirebaseImageUrl(item.imageName)} />{" "}
                         <div>
-                          <span>{item.productname}</span>
+                          <span>{getWords(item.productname, 6)}</span>
                           <span>{item.variants.length} variants</span>
                         </div>
                       </ProductColumn>

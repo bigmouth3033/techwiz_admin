@@ -22,6 +22,11 @@ import Select from "react-select";
 import AlertPopUp from "@/shared/components/PopUp/AlertPopUp";
 import { createNewProductRequest } from "./api/createProductApi";
 import AllVariantPopUp from "./components/PopUp/AllVariantPopUp";
+import WaitingPopUp from "@/shared/components/PopUp/WaitingPopUp";
+import ColorPopUp from "./components/PopUp/ColorPopUp";
+import { IoIosColorPalette } from "react-icons/io";
+import chroma from "chroma-js";
+import { Link } from "react-router-dom";
 
 const Container = styled.div`
   margin: 2rem;
@@ -31,6 +36,12 @@ const Container = styled.div`
   & margin {
     padding: 0;
     margin: 0;
+  }
+
+  & h5 {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.6);
   }
 `;
 
@@ -211,6 +222,20 @@ const Input = styled(Select)`
   }
 `;
 
+const Creatable = styled(CreatableSelect)`
+  border-radius: 3px;
+
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  width: 10rem;
+
+  transition: all 0.3s;
+  & * {
+    cursor: pointer;
+    outline: none !important;
+    border: none !important;
+  }
+`;
+
 const VariantContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -231,14 +256,21 @@ const VariantContainer = styled.div`
 `;
 
 const VariantItem = styled.div`
-  padding: 1rem;
   border: 1px solid rgba(0, 0, 0, 0.1);
   cursor: pointer;
-
   display: flex;
+  padding: 0 1rem;
 
   > span:nth-of-type(1) {
     flex: 1;
+  }
+
+  & .variant_click {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+
+    padding: 1rem 0;
   }
 
   gap: 1rem;
@@ -328,8 +360,27 @@ const ButtonContainer = styled.div`
 
 const VariantUpdateButton = styled.div`
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   margin: 1rem 0;
+  align-items: center;
+  padding: 0 0 0 1rem;
+  > div {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+`;
+
+const ColorButton = styled.div`
+  background-color: white;
+  cursor: pointer;
+  border: 1px solid black;
+  padding: 10px;
+  border-radius: 5px;
+
+  > svg {
+    color: red;
+  }
 `;
 
 const components = {
@@ -352,19 +403,35 @@ export default function Product() {
   const [onEditAll, setOnEditAll] = useState();
   const [isAlert, setIsAlert] = useState("");
   const inputRef = useRef();
+  const [checkedAll, setCheckedAll] = useState(false);
+  const [colorPopUp, setColorPopUp] = useState(false);
 
-  const [inputValue, setInputValue] = useState(["", "", ""]);
-  const [value, setValue] = useState([[], [], []]);
+  const [inputValue, setInputValue] = useState(["", "", "", "", ""]);
+  const [value, setValue] = useState([[], [], [], [], []]);
 
-  const handleKeyDown = (event, index) => {
+  const handleKeyDown = (event, index, item) => {
     if (!inputValue[index]) return;
     switch (event.key) {
       case "Enter":
       case "Tab":
+        if (item.value == "Color") {
+          try {
+            dispatch({
+              type: ACTIONS.CHANGE_COLOR,
+              next: {
+                ...state.colors,
+                [createOption(inputValue[index]).value]: chroma(
+                  createOption(inputValue[index]).value
+                ).hex(),
+              },
+            });
+          } catch {
+            return;
+          }
+        }
         setValue((prev) => {
           const newValue = [...prev];
           const currentValue = Array.isArray(prev[index]) ? prev[index] : [];
-
           newValue[index] = [...currentValue, createOption(inputValue[index])];
           return newValue;
         });
@@ -381,7 +448,7 @@ export default function Product() {
   };
 
   const onAddMoreVariant = () => {
-    state.variants.push(variantOptions.filter((item) => !state.variants.includes(item))[0]);
+    state.variants.push([]);
 
     dispatch({
       type: ACTIONS.CHANGE_VARIANTS,
@@ -439,6 +506,7 @@ export default function Product() {
           variant: Array.isArray(item) ? item : [item],
           realPrice: 0,
           fakePrice: 0,
+          selected: false,
         });
       }
 
@@ -457,12 +525,18 @@ export default function Product() {
       return;
     }
 
+    if (state.variants.find((item) => !item || item.length == 0)) {
+      setErrors("Variant type cannot be empty");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("ProductName", state.productName);
     formData.append("Brand", state.brand.value);
     formData.append("Description", state.description);
     formData.append("Status", state.active);
     formData.append("RoomFuncion", state.roomFuncion.value);
+
     state.images.forEach((item) => formData.append("Images", item));
     state.variants.forEach((item) => formData.append("Variants", item.value));
     state.variant_detail.forEach((item) => formData.append("VariantsJSON", JSON.stringify(item)));
@@ -476,13 +550,34 @@ export default function Product() {
     });
   };
 
+  useEffect(() => {
+    let isOk = true;
+
+    if (state.variant_detail.length == 0) {
+      return;
+    }
+
+    for (let item of state.variant_detail) {
+      if (item.selected == false) {
+        isOk = false;
+        break;
+      }
+    }
+
+    setCheckedAll(isOk);
+  }, [state.variant_detail]);
+
+  if (createNewProduct.isPending) {
+    return <WaitingPopUp />;
+  }
+
   return (
     <>
       <Container>
         <FormContainer>
           <LeftContainer>
             <InputContainer>
-              <label>Product Name</label>
+              <h5>Product Name</h5>
               <TextInput
                 state={state.productName}
                 setState={(value) => dispatch({ type: ACTIONS.CHANGE_NAME, next: value })}
@@ -491,7 +586,7 @@ export default function Product() {
 
             <SelectContainer>
               <InputContainer>
-                <label>Brand</label>
+                <h5>Brand</h5>
                 <SelectInput
                   state={state.brand}
                   setState={(value) => dispatch({ type: ACTIONS.CHANGE_BRAND, next: value })}
@@ -510,7 +605,7 @@ export default function Product() {
             </SelectContainer>
 
             <InputContainer>
-              <label>Product Name</label>
+              <h5>Product Name</h5>
               <TextEditor
                 state={state.description}
                 setState={(value) => dispatch({ type: ACTIONS.CHANGE_DESCRIPTION, next: value })}
@@ -518,7 +613,7 @@ export default function Product() {
             </InputContainer>
 
             <ImageContainer>
-              <p>Image container</p>
+              <h5>Image container</h5>
               {state.images.length > 0 && (
                 <Images>
                   {state.images.map((item, index) => {
@@ -552,12 +647,18 @@ export default function Product() {
               )}
               <input ref={inputRef} onChange={handleImageChange} type="file" multiple />
             </ImageContainer>
+
             <VariantContainer>
-              <p>Variants</p>
+              <h5>
+                Variants{" "}
+                <Link to={"https://www.w3.org/TR/css-color-4/#named-colors"}>
+                  (Color variant only accept certain name)
+                </Link>
+              </h5>
               {state.variants.map((item, index) => {
                 return (
                   <VariantDetail key={index}>
-                    <Input
+                    <Creatable
                       value={item}
                       onChange={(options) => {
                         state.variants[index] = options;
@@ -566,9 +667,7 @@ export default function Product() {
                           next: state.variants,
                         });
                       }}
-                      options={variantOptions.filter(
-                        (optionItem) => !state.variants.includes(optionItem)
-                      )}
+                      options={variantOptions}
                       isSearchable
                     />
                     <FaTrash
@@ -578,7 +677,7 @@ export default function Product() {
                           setIsAlert("You need at least 1 variant ");
                           return;
                         }
-                        state.variants = state.variants.filter((item, number) => index != number);
+                        state.variants = state.variants.filter((_, number) => index != number);
                         dispatch({
                           type: ACTIONS.CHANGE_VARIANTS,
                           next: state.variants,
@@ -587,7 +686,7 @@ export default function Product() {
                           prev[index] = [];
                           const newValue = [];
                           for (let item of prev) {
-                            if (item.length == 0) {
+                            if (!item || item.length == 0) {
                               continue;
                             }
                             newValue.push(item);
@@ -606,6 +705,15 @@ export default function Product() {
                       isMulti
                       menuIsOpen={false}
                       onChange={(newValue) => {
+                        if (item.value == "Color") {
+                          const arr = newValue.map((newItem) => newItem.value);
+                          Object.keys(state.colors).forEach((color) => {
+                            if (!arr.includes(color)) {
+                              delete state.colors[color];
+                            }
+                          });
+                          dispatch({ type: ACTIONS.CHANGE_COLOR, next: { ...state.colors } });
+                        }
                         const newestValue = [...value];
                         newestValue[index] = newValue;
                         setValue(newestValue);
@@ -615,14 +723,19 @@ export default function Product() {
                         newestValue[index] = newValue;
                         setInputValue(newestValue);
                       }}
-                      onKeyDown={(ev) => handleKeyDown(ev, index)}
+                      onKeyDown={(ev) => handleKeyDown(ev, index, item)}
                       placeholder="Type something and press enter..."
                       value={value[index]}
                     />
+                    {item.value == "Color" && (
+                      <ColorButton onClick={() => setColorPopUp(true)}>
+                        <IoIosColorPalette />
+                      </ColorButton>
+                    )}
                   </VariantDetail>
                 );
               })}
-              {state.variants.length < 3 && (
+              {state.variants.length < 5 && (
                 <button onClick={onAddMoreVariant}>
                   <FaPlus />
                   Add more variant
@@ -631,23 +744,62 @@ export default function Product() {
             </VariantContainer>
             {state.variant_detail.length != 0 && (
               <VariantUpdateButton>
-                <Button1 onClick={() => setOnEditAll(true)}>Update All</Button1>
+                <div>
+                  <InputCheckBox
+                    checked={checkedAll}
+                    onChange={() => {
+                      if (checkedAll == true) {
+                        for (let item of state.variant_detail) {
+                          item.selected = false;
+                        }
+                        dispatch({
+                          type: ACTIONS.CHANGE_VARIANT_DETAIL,
+                          next: [...state.variant_detail],
+                        });
+                      } else {
+                        for (let item of state.variant_detail) {
+                          item.selected = true;
+                        }
+                        dispatch({
+                          type: ACTIONS.CHANGE_VARIANT_DETAIL,
+                          next: [...state.variant_detail],
+                        });
+                      }
+                    }}
+                  />
+                  <span>All</span>
+                </div>
+                <Button1 onClick={() => setOnEditAll(true)}>Update Variant</Button1>
               </VariantUpdateButton>
             )}
             <VariantItemContainer>
               {state.variant_detail.map((item, index) => {
                 return (
-                  <VariantItem
-                    key={index}
-                    onClick={() => {
-                      setChosenVariantDetail(item);
-                      setVariantDetailPopUp(true);
-                    }}
-                  >
-                    <span>
-                      {item.variant.length != 1 ? item.variant.join(" / ") : item.variant[0]}
-                    </span>
-                    <span>${item.realPrice}</span>
+                  <VariantItem key={index}>
+                    <InputCheckBox
+                      checked={item.selected}
+                      onChange={(ev) => {
+                        ev.stopPropagation();
+                        ev.nativeEvent.stopImmediatePropagation();
+                        state.variant_detail[index].selected = !item.selected;
+                        dispatch({
+                          type: ACTIONS.CHANGE_VARIANT_DETAIL,
+                          next: [...state.variant_detail],
+                        });
+                      }}
+                    />
+                    <div
+                      className="variant_click"
+                      onClick={() => {
+                        setChosenVariantDetail(item);
+                        setVariantDetailPopUp(true);
+                      }}
+                    >
+                      <span>
+                        {item.variant.length != 1 ? item.variant.join(" / ") : item.variant[0]}
+                      </span>
+                      <span>${item.realPrice}</span>
+                    </div>
                   </VariantItem>
                 );
               })}
@@ -698,6 +850,15 @@ export default function Product() {
       )}
       {isAlert && <AlertPopUp message={isAlert} action={() => setIsAlert("")} />}
       {errors && <ErrorPopUp message={errors} action={() => setErrors()} />}
+      {colorPopUp && (
+        <ColorPopUp
+          action={() => setColorPopUp()}
+          state={state.colors}
+          setState={() => {
+            dispatch({ type: ACTIONS.CHANGE_COLOR, next: state.colors });
+          }}
+        />
+      )}
     </>
   );
 }

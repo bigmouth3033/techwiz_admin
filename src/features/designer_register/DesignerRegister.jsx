@@ -7,7 +7,6 @@ import Avatar from "react-avatar";
 import Button1 from "@/shared/components/Button/Button1";
 import ErrorPopUp from "@/shared/components/PopUp/ErrorPopUp";
 import SuccessPopUp from "@/shared/components/PopUp/SuccessPopUp";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import defaul_employee from "@/shared/assets/images/default_avatar.jpg";
 import AlertPopUp from "@/shared/components/PopUp/AlertPopUp";
@@ -17,6 +16,8 @@ import TextEditor from "../product/components/TextEditor/TextEditor";
 import { useEffect } from "react";
 import WebFont from "webfontloader";
 import { registerNewDesignerRequest } from "./api/designerRegisterApi";
+import { BiImageAdd } from "react-icons/bi";
+import { AiOutlineClose } from "react-icons/ai";
 
 const Container = styled.div`
   background-color: white;
@@ -70,32 +71,10 @@ const InputContainer = styled.div`
   padding: 10px 0;
 `;
 
-const Images = styled.div`
+const AvatarImages = styled.div`
   > input {
     display: none;
   }
-`;
-
-const GenderDobContainer = styled.div`
-  display: grid;
-  grid-template-columns: 150px auto;
-  align-items: center;
-  gap: 3rem;
-`;
-
-const DatePickerStyled = styled(DatePicker)`
-  padding: 0;
-  margin: 0;
-  outline: none;
-`;
-
-const DateContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  > label {
-    margin-bottom: 10px;
-  }
-  /* gap: 10px; */
 `;
 
 const DetailContainer = styled.div`
@@ -106,18 +85,20 @@ const DetailContainer = styled.div`
 
 const Header = styled.div`
   display: flex;
-  gap: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 
   > button {
-    background-color: white;
-    border: none;
-    cursor: pointer;
+    flex: 1;
   }
-  margin-bottom: 1rem;
 `;
 
-const HeaderButton = styled.div`
+const HeaderButton = styled.button`
   cursor: pointer;
+  background-color: white;
+  transition: all 0.5s;
+  border: none;
+  border-bottom: 2px solid white;
   font-size: 18px;
   ${(props) => {
     if (props.$active) {
@@ -128,6 +109,107 @@ const HeaderButton = styled.div`
   }}
 `;
 
+const ImageContainer = styled.div`
+  > input {
+    display: none;
+  }
+
+  margin: 5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0;
+`;
+
+const Images = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-auto-rows: 9rem;
+  gap: 10px;
+
+  > div:nth-of-type(1) {
+    grid-column: 1/3;
+    grid-row: 1/3;
+  }
+
+  > div {
+    border: 1px dotted rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  & img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+`;
+
+const ImageLayout = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  display: flex;
+  justify-content: flex-end;
+  padding: 5px;
+
+  > svg {
+    display: none;
+    font-size: 1.2rem;
+    background-color: white;
+    padding: none;
+    border-radius: 5px;
+  }
+
+  > svg:nth-of-type(1) {
+    width: 2rem;
+    height: 2rem;
+    margin-left: 30px;
+    background-color: rgba(0, 0, 0, 0);
+    color: white;
+    border: 2px dotted rgba(255, 255, 255, 1);
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  &:hover svg {
+    display: block;
+  }
+`;
+
+const ImageItem = styled.div`
+  position: relative;
+`;
+
+const AddImageButton = styled.button`
+  background-color: white;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  gap: 10px;
+  padding: 3rem 2rem;
+  border: 1px dotted rgba(0, 0, 0, 0.2);
+
+  > span {
+    color: rgba(0, 0, 255, 0.5);
+    font-size: 16px;
+  }
+
+  > svg {
+    font-size: 45px;
+    opacity: 0.3;
+  }
+`;
+
 const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PasswordRegex = /^[A-Za-z0-9]{6,}$/;
 
@@ -135,10 +217,10 @@ export default function DesignerRegister() {
   const [avatarError, setAvatarError] = useState();
   const registerNewDesigner = registerNewDesignerRequest();
   let fileRef = useRef();
+  let certificateRef = useRef();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [specialize, setSpecialize] = useState("");
-
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
@@ -148,8 +230,8 @@ export default function DesignerRegister() {
   const [avatar, setAvatar] = useState();
   const [year, setYear] = useState("");
   const [portfolio, setPortfolio] = useState("");
-  const [isPortfolio, setIsPortfolio] = useState(false);
-
+  const [certificateImages, setCertificateImages] = useState([]);
+  const [header, setHeader] = useState("info");
   const [errors, setErrors] = useState({});
   const [imageError, setImageError] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -184,6 +266,36 @@ export default function DesignerRegister() {
       setAvatar(ev.target.files[0]);
       setImageError(null);
       ev.target.value = null;
+    }
+  };
+
+  const handleCertificateChange = (ev) => {
+    const allowedFileTypes = ["image/jpeg", "image/png", "image/gif", "image/jpg"];
+    const maxFileSize = 1 * 1024 * 1024;
+
+    if (ev.target.files.length > 0) {
+      const isValidFileType = Array.from(ev.target.files).every((file) =>
+        allowedFileTypes.includes(file.type)
+      );
+
+      const isValidFileSize = Array.from(ev.target.files).every((file) => file.size <= maxFileSize);
+
+      if (!isValidFileType) {
+        setImageError("Invalid file type. Please upload an image of type JPEG, PNG, GIF or JPG.");
+        return;
+      }
+
+      if (!isValidFileSize) {
+        setImageError("File size too large. Please upload an image smaller than 1 MB.");
+        return;
+      }
+
+      setCertificateImages((prev) => {
+        return [...prev, ...ev.target.files];
+      });
+
+      setImageError(null);
+      ev.target.files = [];
     }
   };
 
@@ -334,6 +446,10 @@ export default function DesignerRegister() {
         formData.append("avatar", avatar);
       }
 
+      if (certificateImages.length != 0) {
+        certificateImages.forEach((item) => formData.append("Certificate", item));
+      }
+
       registerNewDesigner.mutate(formData, {
         onSuccess: (response) => {
           if (response.status == 200) {
@@ -361,6 +477,10 @@ export default function DesignerRegister() {
     });
   }, []);
 
+  if (registerNewDesigner.isPending) {
+    return <WaitingPopUp />;
+  }
+
   return (
     <>
       <Container>
@@ -368,25 +488,34 @@ export default function DesignerRegister() {
           <LeftForm>
             <Header>
               <HeaderButton
-                $active={!isPortfolio}
+                $active={header == "info"}
                 onClick={(ev) => {
                   ev.preventDefault();
-                  setIsPortfolio(false);
+                  setHeader("info");
                 }}
               >
                 Designer information
               </HeaderButton>
               <HeaderButton
-                $active={isPortfolio}
+                $active={header == "portfolio"}
                 onClick={(ev) => {
                   ev.preventDefault();
-                  setIsPortfolio(true);
+                  setHeader("portfolio");
                 }}
               >
                 Porfolio
               </HeaderButton>
+              <HeaderButton
+                $active={header == "certificate"}
+                onClick={(ev) => {
+                  ev.preventDefault();
+                  setHeader("certificate");
+                }}
+              >
+                Certificate
+              </HeaderButton>
             </Header>
-            {!isPortfolio ? (
+            {header == "info" && (
               <DetailContainer>
                 <InputContainer>
                   <label>
@@ -456,10 +585,53 @@ export default function DesignerRegister() {
                 </InputContainer>
                 {errors.year && <h5>{errors.year}</h5>}
               </DetailContainer>
-            ) : (
+            )}
+
+            {header == "portfolio" && (
               <div>
                 <TextEditor state={portfolio} setState={setPortfolio} />
               </div>
+            )}
+
+            {header == "certificate" && (
+              <ImageContainer>
+                {certificateImages.length > 0 && (
+                  <Images>
+                    {certificateImages.map((item, index) => {
+                      return (
+                        <ImageItem key={index}>
+                          <ImageLayout>
+                            <AiOutlineClose
+                              onClick={() =>
+                                setCertificateImages((prev) =>
+                                  certificateImages.filter((_, position) => position != index)
+                                )
+                              }
+                            />
+                          </ImageLayout>
+                          <img src={URL.createObjectURL(item)} />
+                        </ImageItem>
+                      );
+                    })}
+                    <AddImageButton onClick={() => certificateRef.current.click()}>
+                      <BiImageAdd />
+                    </AddImageButton>
+                  </Images>
+                )}
+
+                {certificateImages.length == 0 && (
+                  <AddImageButton onClick={() => certificateRef.current.click()}>
+                    <BiImageAdd />
+                    <span>Add Image</span>
+                  </AddImageButton>
+                )}
+                <input
+                  ref={certificateRef}
+                  onChange={handleCertificateChange}
+                  type="file"
+                  multiple
+                />
+              </ImageContainer>
             )}
 
             <ButtonContainer>
@@ -468,7 +640,7 @@ export default function DesignerRegister() {
             </ButtonContainer>
           </LeftForm>
           <RightForm>
-            <Images>
+            <AvatarImages>
               {!avatar ? (
                 <div>
                   <Avatar round size="150" src={defaul_employee} />
@@ -479,7 +651,7 @@ export default function DesignerRegister() {
                 </div>
               )}
               <input onChange={handleImageChange} type="file" ref={fileRef} />
-            </Images>
+            </AvatarImages>
             <p>Maximum file size 1 MB</p>
             <Button1 onClick={onClickSelectImage}>Select Avatar</Button1>
           </RightForm>

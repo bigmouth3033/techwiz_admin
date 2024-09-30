@@ -1,23 +1,13 @@
-import { Children } from "react";
-import { MdDashboard } from "react-icons/md";
-import { FaArrowAltCircleDown } from "react-icons/fa";
-import { FaArrowUpRightFromSquare } from "react-icons/fa6";
-import { MdArrowLeft } from "react-icons/md";
-import { FaArrowsToEye } from "react-icons/fa6";
-import { MdArrowOutward } from "react-icons/md";
-import { RiAdminLine } from "react-icons/ri";
 import { IoMdAdd } from "react-icons/io";
 import { CiViewList } from "react-icons/ci";
 import { IoChatbox } from "react-icons/io5";
-import { FaRankingStar } from "react-icons/fa6";
-import { PiRanking } from "react-icons/pi";
-import { PiTicketBold } from "react-icons/pi";
 import { AiOutlineProduct } from "react-icons/ai";
 import { TbCategory2 } from "react-icons/tb";
-import { MdCategory } from "react-icons/md";
 import { SiDesignernews } from "react-icons/si";
-import { IoReloadOutline } from "react-icons/io5";
 import { CgProfile } from "react-icons/cg";
+import { LuLoader } from "react-icons/lu";
+import { ImBlog } from "react-icons/im";
+import { FaImages } from "react-icons/fa";
 
 const sidebar_content = [
   {
@@ -54,7 +44,7 @@ const sidebar_content = [
       },
       {
         name: "Unapproved Designer",
-        icon: <IoReloadOutline />,
+        icon: <LuLoader />,
         link: "/pending_approved_designer",
       },
     ],
@@ -62,7 +52,7 @@ const sidebar_content = [
   {
     name: "Gallery",
     type: "group",
-    icon: <IoChatbox />,
+    icon: <FaImages />,
     role: "admin",
     children: [
       {
@@ -84,17 +74,11 @@ const sidebar_content = [
     link: "/list_order",
     role: "admin",
   },
-  {
-    name: "Create Blog",
-    type: "button",
-    icon: <IoChatbox />,
-    link: "/create_blog",
-    role: "designer",
-  },
+
   {
     name: "Blog",
     type: "group",
-    icon: <IoChatbox />,
+    icon: <ImBlog />,
     role: "admin",
     children: [
       {
@@ -106,6 +90,25 @@ const sidebar_content = [
         name: "Blog List",
         icon: <IoMdAdd />,
         link: "/blog",
+      },
+    ],
+  },
+
+  {
+    name: "Blog",
+    type: "group",
+    icon: <ImBlog />,
+    role: "designer",
+    children: [
+      {
+        name: "Add Blog",
+        icon: <CiViewList />,
+        link: "/create_blog",
+      },
+      {
+        name: "Blog List",
+        icon: <IoMdAdd />,
+        link: "/designer_blogs",
       },
     ],
   },

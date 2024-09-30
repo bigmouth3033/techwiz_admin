@@ -21,9 +21,10 @@ const Input = styled.input`
 
 const regex = /^-?\d+(\.\d+)?$/;
 
-export default function NumberInput({ state, setState, placeholder }) {
+export default function NumberInput({ state, setState, placeholder, readOnly }) {
   return (
     <Input
+      readOnly={readOnly}
       placeholder={placeholder}
       value={state}
       onChange={(ev) => {

@@ -78,6 +78,12 @@ export default function TextEditor({ state, setState }) {
     return null;
   }
 
+  useEffect(() => {
+    if (editor && state !== editor.getHTML()) {
+      editor.commands.setContent(state || ""); // update editor with new content
+    }
+  }, [state, editor]);
+
   return (
     <EditorContainer>
       <ToolBar editor={editor} />

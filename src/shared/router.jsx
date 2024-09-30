@@ -6,10 +6,7 @@ import CustomAdmin from "@/features/custom_admin/CustomAdmin";
 import EmployeeList from "@/features/employee_list/EmployeeList";
 import EmployeeUpdate from "@/features/employee_update/EmployeeUpdate";
 import Chat from "@/features/chat/Chat";
-import NewRank from "@/features/new_rank/NewRank";
-import UpdateRank from "@/features/update_rank/UpdateRank";
-import RankList from "@/features/ranks/RankList";
-import NewRankVoucher from "@/features/new_rank_voucher/NewRankVoucher";
+
 import Product from "@/features/product/Product";
 import DesignerRegister from "@/features/designer_register/DesignerRegister";
 import PendingApprovedDesigner from "@/features/pending_approved_designer/PendingApprovedDesigner";
@@ -19,18 +16,19 @@ import DesignerConsultation from "@/features/designer_consultation/DesignerConsu
 import ProductList from "@/features/product_list/ProductList";
 import ForgotPassword from "@/features/forgot_password/ForgotPassword";
 import Forgot from "@/features/forgot/Forgot";
-
-import Gallery from "@/features/gallery/gallery";
 import GalleryList from "@/features/gallery_list/GalleryList";
 import Order from "@/features/Order/Order";
-import UpdateGallery from "@/features/UpdateGallery/UpdateGallery";
-import OrderDetail from "@/features/OrderDetail/OrderDetail";
 
+import OrderDetail from "@/features/OrderDetail/OrderDetail";
 import Blogs from "@/features/blog/Blogs";
 import CreateBlog from "@/features/blog/components/CreateBlog";
 import Blog from "@/features/blog/components/Blog";
-
 import AdminConsultationList from "@/features/admin_consultation_list/AdminConsultationList";
+import PendingDesignerDetail from "@/features/pending_designer_detail/PendingDesignerDetail";
+import DesignerDetail from "@/features/designer_detail/DesignerDetail";
+import DesignerBlogs from "@/features/blog/components/DesignerBlogs";
+import AddGallery from "@/features/add_gallery/AddGallery";
+import UpdateGallery from "@/features/update-gallery/UpdateGallery";
 
 const router = createBrowserRouter([
   {
@@ -57,22 +55,7 @@ const router = createBrowserRouter([
         path: "/chat",
         element: <Chat />,
       },
-      {
-        path: "/new_rank",
-        element: <NewRank />,
-      },
-      {
-        path: "/update_rank",
-        element: <UpdateRank />,
-      },
-      {
-        path: "/rank_list",
-        element: <RankList />,
-      },
-      {
-        path: "/new_rank_voucher",
-        element: <NewRankVoucher />,
-      },
+
       {
         path: "/new_product",
         element: <Product />,
@@ -96,10 +79,6 @@ const router = createBrowserRouter([
       {
         path: "/consultion_list",
         element: <DesignerConsultation />,
-      },
-      {
-        path: "/add_gallery",
-        element: <Gallery />,
       },
       {
         path: "/list_gallery",
@@ -132,6 +111,22 @@ const router = createBrowserRouter([
       {
         path: "/admin_consultion_list",
         element: <AdminConsultationList />,
+      },
+      {
+        path: "/pending_detail",
+        element: <PendingDesignerDetail />,
+      },
+      {
+        path: "/designer_detail",
+        element: <DesignerDetail />,
+      },
+      {
+        path: "/designer_blogs",
+        element: <DesignerBlogs />,
+      },
+      {
+        path: "/add_gallery",
+        element: <AddGallery />,
       },
     ],
   },

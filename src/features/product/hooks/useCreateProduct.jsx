@@ -14,6 +14,7 @@ export default function useCreateProductReducer() {
     CHANGE_VARIANT_DETAIL: "CHANGE_VARIANT_DETAIL",
     CHANGE_FUNCTION: "CHANGE_FUNCTION",
     CHANGE_ROOM_TYPE: "CHANGE_ROOM_TYPE",
+    CHANGE_COLOR: "CHANGE_COLOR",
   };
 
   function reducer(state, action) {
@@ -34,6 +35,8 @@ export default function useCreateProductReducer() {
         return { ...state, brand: action.next };
       case ACTIONS.CHANGE_FUNCTION:
         return { ...state, roomFuncion: action.next };
+      case ACTIONS.CHANGE_COLOR:
+        return { ...state, colors: action.next };
     }
   }
 
@@ -46,6 +49,7 @@ export default function useCreateProductReducer() {
     variants: [variantOptions[0]],
     variant_detail: [],
     active: true,
+    colors: {},
   });
 
   return [state, dispatch, ACTIONS];

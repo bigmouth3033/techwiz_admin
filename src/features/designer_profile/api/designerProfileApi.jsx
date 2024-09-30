@@ -56,3 +56,14 @@ export const updateInfoDesignerRequest = () => {
     mutationFn: request,
   });
 };
+
+export const updateCertificateRequest = () => {
+  const request = async (payload) => {
+    const response = await axiosAdmin.put("DesignerAdmin/update_certificate", payload);
+    return response.data;
+  };
+
+  return useMutation({
+    mutationFn: request,
+  });
+};

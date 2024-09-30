@@ -6,16 +6,20 @@ import "../assets/css/blog.css";
 import { useNavigate } from "react-router-dom";
 import Avatar from "react-avatar";
 import { FaRegImages } from "react-icons/fa6";
+import TextInput from "@/shared/components/Input/TextInput";
+import Button1 from "@/shared/components/Button/Button1";
+import ErrorPopUp from "@/shared/components/PopUp/ErrorPopUp";
+import { adminRequest } from "@/shared/api/adminApi";
 
-const StyledError = styled.div`
+const StyledError = styled.h5`
+  font-size: 17px;
   color: red;
-  font-size: 14px;
-  height: 2.5rem;
-  padding: 5px 0;
-  text-align: justify;
 `;
 const Container = styled.div`
   margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
 const Label = styled.label`
@@ -25,57 +29,23 @@ const Label = styled.label`
   font-size: 17px;
 `;
 
-const Input = styled.input`
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-  box-sizing: border-box;
-
-  &:focus {
-    outline: none;
-    border-color: #007bff;
-  }
-`;
-
 const StyledContainer = styled.div`
-  /* width: 80%;
-  margin: 0 auto; */
   margin: 2rem;
   padding: 2rem;
-  background-color: white;
+
   display: flex;
   flex-direction: column;
   gap: 1rem;
+
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 2rem;
 `;
 
 const StyleContainerButton = styled.div`
-  text-align: right;
-`;
-const StyledButton = styled.button`
-  background-color: #007bff;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 20px;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-
-  &:focus {
-    outline: none;
-  }
-
-  &:disabled {
-    background-color: #d3d3d3;
-    cursor: not-allowed;
-  }
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
 `;
 
 const ImageDefault = styled.div`
@@ -94,119 +64,179 @@ const ImageDefault = styled.div`
   }
 `;
 
+const LeftContainer = styled.div`
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  background-color: white;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+`;
+
+const RightContainer = styled.div`
+  > div {
+    background-color: white;
+    padding: 1rem;
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    position: sticky;
+    top: 5rem;
+  }
+`;
+
 export default function CreateBlog() {
+  const admin = adminRequest();
   const imgUploadRef = useRef();
   const [content, setContent] = useState("");
-  const [titleError, setTitleError] = useState(false);
-
+  const [errors, setErrors] = useState({});
+  const [imageError, setImageError] = useState();
   const [imgSrc, setImgSrc] = useState();
-  const titleRef = useRef();
+  const [title, setTitle] = useState("");
   const createBlogMutation = CreateBlogMutation();
   const navi = useNavigate();
 
-  const checkChange = () => {
-    const allowedFileTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  const handleImageChange = (ev) => {
+    const allowedFileTypes = ["image/jpeg", "image/png", "image/gif", "image/jpg"];
+    const maxFileSize = 1 * 1024 * 1024;
 
-    if (imgUploadRef.current.files.length !== 0) {
-      const isValidFileType = Array.from(imgUploadRef.current.files).every((file) =>
+    if (ev.target.files.length > 0) {
+      const isValidFileType = Array.from(ev.target.files).every((file) =>
         allowedFileTypes.includes(file.type)
       );
 
+      const isValidFileSize = Array.from(ev.target.files).every((file) => file.size <= maxFileSize);
+
       if (!isValidFileType) {
-        alert("Invalid file type! Please select a valid image file.");
-        imgUploadRef.current.value = null; // Reset file input
-        setImgSrc(DefaultImg); // Reset image to default
+        setImageError("Invalid file type. Please upload an image of type JPEG, PNG, GIF or JPG.");
         return;
       }
 
-      const selectedFile = imgUploadRef.current.files[0];
-      setImgSrc(URL.createObjectURL(selectedFile)); // Cập nhật hình ảnh
-      console.log(selectedFile.name);
+      if (!isValidFileSize) {
+        setImageError("File size too large. Please upload an image smaller than 1 MB.");
+        return;
+      }
+
+      setImgSrc(ev.target.files[0]);
+      setImageError(null);
+      ev.target.value = null;
     }
   };
 
   const handleSubmit = () => {
-    // Kiểm tra xem có file nào được chọn hay không
-    const file = imgUploadRef.current?.files[0];
+    let isOk = true;
 
-    let isError = false;
-    const REQUIRED_REGEX = /^.{1,}$/;
-
-    // Kiểm tra tiêu đề blog có hợp lệ hay không
-    if (!REQUIRED_REGEX.test(titleRef.current.value)) {
-      setTitleError(true);
-      isError = true;
+    if (!title) {
+      setErrors((prev) => {
+        return { ...prev, title: "Title cannot be empty" };
+      });
+      isOk = false;
     } else {
-      setTitleError(false);
+      setErrors((prev) => {
+        return { ...prev, title: null };
+      });
     }
 
-    const formData = new FormData();
+    if (!content) {
+      setErrors((prev) => {
+        return { ...prev, content: "Content cannot be empty" };
+      });
+      isOk = false;
+    } else {
+      setErrors((prev) => {
+        return { ...prev, content: null };
+      });
+    }
 
-    // Append các dữ liệu cần thiết vào FormData
-    formData.append("title", titleRef.current.value);
-    formData.append("content", content);
-    formData.append("imagesFile", file); // Append tệp hình ảnh
+    if (!imgSrc) {
+      setErrors((prev) => {
+        return { ...prev, image: "Image cannot be empty" };
+      });
+      isOk = false;
+    } else {
+      setErrors((prev) => {
+        return { ...prev, image: null };
+      });
+    }
 
-    // Gọi mutation để submit form
-    createBlogMutation.mutate(formData, {
-      onSuccess: (response) => {
-        if (response.status == 200) {
-          navi("/blog");
-          return;
-        }
+    if (isOk) {
+      const formData = new FormData();
 
-        console.log(response);
-      },
-      onError: (error) => {
-        console.log(error);
-      },
-    });
+      // Append các dữ liệu cần thiết vào FormData
+      formData.append("title", title);
+      formData.append("content", content);
+      formData.append("imagesFile", imgSrc); // Append tệp hình ảnh
+
+      // Gọi mutation để submit form
+      createBlogMutation.mutate(formData, {
+        onSuccess: (response) => {
+          if (response.status == 200) {
+            if (admin.data.data.role == "admin") {
+              navi("/blog");
+            } else {
+              navi("/designer_blogs");
+            }
+            return;
+          }
+
+          console.log(response);
+        },
+        onError: (error) => {
+          console.log(error);
+        },
+      });
+    }
   };
 
   return (
-    <StyledContainer>
-      <Container>
-        <Label htmlFor="title">Input Blog Title</Label>
-        <Input type="text" name="title" id="title" ref={titleRef} />
-      </Container>
-      {titleError && <StyledError>This field is required</StyledError>}
+    <>
+      <StyledContainer>
+        <LeftContainer>
+          <Container>
+            <h5>Blog Title</h5>
+            <TextInput state={title} setState={setTitle} />
+          </Container>
+          {errors.title && <StyledError>{errors.title}</StyledError>}
 
-      <div>
-        <Label>Blog content</Label>
-        <TextEditor state={content} setState={setContent} />
-      </div>
+          <Container>
+            <h5>Blog content</h5>
+            <TextEditor state={content} setState={setContent} />
+          </Container>
+          {errors.content && <StyledError>{errors.content}</StyledError>}
 
-      <div>
-        <label>
-          <b>Blog Cover Image</b>
-        </label>
-
-        <ImageDefault>
-          {imgSrc ? (
-            <Avatar
-              onClick={() => imgUploadRef.current.click()}
-              src={imgSrc}
-              size="300"
-              alt="Selected"
+          <Container>
+            <h5>Blog Cover</h5>
+            <ImageDefault onClick={() => imgUploadRef.current.click()}>
+              {imgSrc ? (
+                <Avatar src={URL.createObjectURL(imgSrc)} size="300" alt="Selected" />
+              ) : (
+                <FaRegImages />
+              )}
+            </ImageDefault>
+            <input
+              ref={imgUploadRef}
+              accept="image/*"
+              onChange={handleImageChange}
+              type="file"
+              id="images"
+              style={{ display: "none" }} // Hide the file input
             />
-          ) : (
-            <FaRegImages onClick={() => imgUploadRef.current.click()} />
-          )}
-        </ImageDefault>
+          </Container>
+          {errors.image && <StyledError>{errors.image}</StyledError>}
+        </LeftContainer>
 
-        <input
-          ref={imgUploadRef}
-          accept="image/*"
-          onChange={checkChange}
-          type="file"
-          id="images"
-          style={{ display: "none" }} // Hide the file input
-        />
-      </div>
-
-      <StyleContainerButton>
-        <StyledButton onClick={handleSubmit}>Submit</StyledButton>
-      </StyleContainerButton>
-    </StyledContainer>
+        <RightContainer>
+          <StyleContainerButton>
+            <Button1 onClick={() => window.location.reload()}>Cancel</Button1>
+            <Button1 onClick={handleSubmit}>Submit</Button1>
+          </StyleContainerButton>
+        </RightContainer>
+      </StyledContainer>
+      {imageError && <ErrorPopUp message={imageError} action={() => setImageError()} />}
+    </>
   );
 }

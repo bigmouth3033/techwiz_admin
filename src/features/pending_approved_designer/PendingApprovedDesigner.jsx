@@ -15,6 +15,7 @@ import TextInput from "@/shared/components/Input/TextInput";
 import Button1 from "@/shared/components/Button/Button1";
 import SelectReact from "react-select";
 import NumberInput from "@/shared/components/Input/NumberInput";
+import { useNavigate } from "react-router-dom";
 
 const Container = styled.div`
   background-color: white;
@@ -166,6 +167,13 @@ const FilterDropDown = styled.div`
     display: flex;
     gap: 1rem;
   }
+
+  > div {
+    > div {
+      display: flex;
+      gap: 1rem;
+    }
+  }
 `;
 
 const ButtonContainer = styled.div`
@@ -178,15 +186,25 @@ const CustomButton2 = styled(Button2)`
 `;
 
 export default function PendingApprovedDesigner() {
+  const [rangeValue, setRangeValue] = useState(0);
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const approveDesigner = approveDesignerRequest();
   const denyDesigner = denyDesignerRequest();
   const [search, setSearch] = useState("");
-  const getPendingApproved = getPendingApprovedRequest(currentPage, 10, search);
+  const [specializeSearch, setSpecializeSearch] = useState("");
+  const getPendingApproved = getPendingApprovedRequest(
+    currentPage,
+    10,
+    rangeValue,
+    specializeSearch,
+    search
+  );
   const [approveConfirm, setApproveConfirm] = useState();
   const [denyConfirm, setDenyConfirm] = useState();
   const [isPopUp, setIsPopUp] = useState();
   const [isFilterDropDown, setIsFilterDropDown] = useState(false);
+
   const [from, setFrom] = useState(0);
 
   const onApprove = (designerId) => {
@@ -229,7 +247,40 @@ export default function PendingApprovedDesigner() {
         )}
 
         <SearchContainer>
-          <TextInput state={search} setState={setSearch} placeholder={"Search"} />
+          <FilterBox>
+            <Button1 onClick={() => setIsFilterDropDown((prev) => !prev)}>Filter Option</Button1>
+            {isFilterDropDown && (
+              <FilterDropDown>
+                <div>
+                  <h5>Year of experience from: </h5>
+                  <div>
+                    <input
+                      value={rangeValue}
+                      onChange={(ev) => setRangeValue(ev.target.value)}
+                      type="range"
+                      min={0}
+                      max={100}
+                    />
+                    <span>{rangeValue}</span>
+                  </div>
+                </div>
+                <div>
+                  <h5>Specialize</h5>
+                  <TextInput
+                    state={specializeSearch}
+                    setState={setSpecializeSearch}
+                    placeholder={"Search for specialization"}
+                  />
+                </div>
+              </FilterDropDown>
+            )}
+          </FilterBox>
+
+          <TextInput
+            state={search}
+            setState={setSearch}
+            placeholder={"Search for name, address, email"}
+          />
         </SearchContainer>
         {getPendingApproved.isSuccess && (
           <TableContent>
@@ -270,8 +321,10 @@ export default function PendingApprovedDesigner() {
                           Accept
                         </CustomButton2>
                         <CustomButton2 onClick={() => setDenyConfirm(item.id)}>Deny</CustomButton2>
-                        <CustomButton2 onClick={() => setIsPopUp(item.portfolio)}>
-                          Portfolio
+                        <CustomButton2
+                          onClick={() => navigate("/pending_detail?id=" + item.user.id)}
+                        >
+                          Detail
                         </CustomButton2>
                       </ButtonContainer>
                     </td>

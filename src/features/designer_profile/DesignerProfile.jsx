@@ -18,6 +18,10 @@ import { updatePortfolioRequest } from "./api/designerProfileApi";
 import { updateDesignerAvatarRequest } from "./api/designerProfileApi";
 import SuccessPopUp from "@/shared/components/PopUp/SuccessPopUp";
 import { adminRequest } from "@/shared/api/adminApi";
+import { AiOutlineClose } from "react-icons/ai";
+import { BiImageAdd } from "react-icons/bi";
+import ErrorPopUp from "@/shared/components/PopUp/ErrorPopUp";
+import { updateCertificateRequest } from "./api/designerProfileApi";
 
 const Container = styled.div`
   background-color: white;
@@ -27,14 +31,11 @@ const Container = styled.div`
   & span {
     color: red;
   }
-
-  width: 80%;
-  margin: auto;
 `;
 
 const Form = styled.div`
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 3fr 1fr;
 
   align-items: center;
   gap: 4rem;
@@ -67,7 +68,7 @@ const InputContainer = styled.div`
   padding: 10px 0;
 `;
 
-const Images = styled.div`
+const ImagesAvatar = styled.div`
   > input {
     display: none;
   }
@@ -97,18 +98,20 @@ const DetailContainer = styled.div`
 
 const Header = styled.div`
   display: flex;
-  gap: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 
   > button {
-    background-color: white;
-    border: none;
-    cursor: pointer;
+    flex: 1;
   }
-  margin-bottom: 1rem;
 `;
 
-const HeaderButton = styled.div`
+const HeaderButton = styled.button`
   cursor: pointer;
+  background-color: white;
+  transition: all 0.5s;
+  border: none;
+  border-bottom: 2px solid white;
   font-size: 18px;
   ${(props) => {
     if (props.$active) {
@@ -118,7 +121,6 @@ const HeaderButton = styled.div`
     }
   }}
 `;
-
 const DateOfWorkContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -137,6 +139,106 @@ const DateOfWorkContainer = styled.div`
   }
 `;
 
+const ImageContainer = styled.div`
+  > input {
+    display: none;
+  }
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0;
+`;
+
+const Images = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-auto-rows: 9rem;
+  gap: 10px;
+
+  > div:nth-of-type(1) {
+    grid-column: 1/3;
+    grid-row: 1/3;
+  }
+
+  > div {
+    border: 1px dotted rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  & img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+`;
+
+const ImageLayout = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  display: flex;
+  justify-content: flex-end;
+  padding: 5px;
+
+  > svg {
+    display: none;
+    font-size: 1.2rem;
+    background-color: white;
+    padding: none;
+    border-radius: 5px;
+  }
+
+  > svg:nth-of-type(1) {
+    width: 2rem;
+    height: 2rem;
+    margin-left: 30px;
+    background-color: rgba(0, 0, 0, 0);
+    color: white;
+    border: 2px dotted rgba(255, 255, 255, 1);
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  &:hover svg {
+    display: block;
+  }
+`;
+
+const ImageItem = styled.div`
+  position: relative;
+`;
+
+const AddImageButton = styled.button`
+  background-color: white;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  gap: 10px;
+  padding: 3rem 2rem;
+  border: 1px dotted rgba(0, 0, 0, 0.2);
+
+  > span {
+    color: rgba(0, 0, 255, 0.5);
+    font-size: 16px;
+  }
+
+  > svg {
+    font-size: 45px;
+    opacity: 0.3;
+  }
+`;
+
 const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function DesignerProfile() {
@@ -147,7 +249,8 @@ export default function DesignerProfile() {
   const getDesignerProfile = getDesignerProfileRequest();
   const admin = adminRequest();
 
-  let fileRef = useRef();
+  const inputRef = useRef();
+  const fileRef = useRef();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [specialize, setSpecialize] = useState("");
@@ -157,8 +260,10 @@ export default function DesignerProfile() {
   const [address, setAddress] = useState("");
   const [avatar, setAvatar] = useState();
   const [year, setYear] = useState("");
+  const [certificateImages, setCertificateImages] = useState();
   const [portfolio, setPortfolio] = useState("");
   const [headerButton, setHeaderButton] = useState("info");
+  const updateCertificate = updateCertificateRequest();
 
   const [errors, setErrors] = useState({});
   const [imageError, setImageError] = useState(false);
@@ -373,6 +478,34 @@ export default function DesignerProfile() {
     }
   };
 
+  const handleCertificateChange = (ev) => {
+    ev.preventDefault();
+    const allowedFileTypes = ["image/jpeg", "image/png", "image/gif", "image/jpg"];
+    const maxFileSize = 1 * 1024 * 1024;
+
+    if (ev.target.files.length > 0) {
+      const isValidFileType = Array.from(ev.target.files).every((file) =>
+        allowedFileTypes.includes(file.type)
+      );
+
+      const isValidFileSize = Array.from(ev.target.files).every((file) => file.size <= maxFileSize);
+
+      if (!isValidFileType) {
+        setImageError("Invalid file type. Please upload an image of type JPEG, PNG, GIF or JPG.");
+        return;
+      }
+
+      if (!isValidFileSize) {
+        setImageError("File size too large. Please upload an image smaller than 1 MB.");
+        return;
+      }
+
+      setCertificateImages((prev) => [...prev, ...ev.target.files]);
+      setImageError(null);
+      ev.target.files = [];
+    }
+  };
+
   useEffect(() => {
     if (getDesignerProfile.isSuccess) {
       const data = getDesignerProfile.data.data;
@@ -384,6 +517,9 @@ export default function DesignerProfile() {
       setSpecialize(data.specialization);
       setYear(data.yearsofexperience);
       setPortfolio(data.portfolio);
+      const images = data.certificate.split(";").filter((item) => item.length != 0);
+
+      setCertificateImages(images);
 
       const dowQuery = data.daywork.split("-");
 
@@ -394,6 +530,30 @@ export default function DesignerProfile() {
       }
     }
   }, [getDesignerProfile.fetchStatus]);
+
+  const onUpdateCertificate = (ev) => {
+    ev.preventDefault();
+
+    const formData = new FormData();
+
+    formData.append("DesignerId", admin.data.data.interiordesigner.id);
+
+    certificateImages
+      .filter((item) => typeof item != "object")
+      .forEach((item) => formData.append("OldList", item));
+
+    certificateImages
+      .filter((item) => typeof item == "object")
+      .forEach((item) => formData.append("NewImages", item));
+
+    updateCertificate.mutate(formData, {
+      onSuccess: (response) => {
+        if (response.status == 200) {
+          setIsSuccess(true);
+        }
+      },
+    });
+  };
 
   return (
     <>
@@ -408,7 +568,7 @@ export default function DesignerProfile() {
                   setHeaderButton("info");
                 }}
               >
-                Designer information
+                Information
               </HeaderButton>
               <HeaderButton
                 $active={headerButton == "portfolio"}
@@ -418,6 +578,15 @@ export default function DesignerProfile() {
                 }}
               >
                 Porfolio
+              </HeaderButton>
+              <HeaderButton
+                $active={headerButton == "certificate"}
+                onClick={(ev) => {
+                  ev.preventDefault();
+                  setHeaderButton("certificate");
+                }}
+              >
+                Certificate
               </HeaderButton>
               <HeaderButton
                 $active={headerButton == "dow"}
@@ -495,6 +664,53 @@ export default function DesignerProfile() {
                 </div>
                 <ButtonContainer>
                   <Button1 onClick={(ev) => onUpdatePorfolio(ev)}>Save</Button1>
+                </ButtonContainer>
+              </>
+            )}
+
+            {headerButton == "certificate" && (
+              <>
+                <ImageContainer>
+                  {certificateImages.length > 0 && (
+                    <Images>
+                      {certificateImages.map((item, index) => {
+                        return (
+                          <ImageItem key={index}>
+                            <ImageLayout>
+                              <AiOutlineClose
+                                onClick={() => {
+                                  setCertificateImages((prev) => [
+                                    ...prev.filter((_, pos) => pos != index),
+                                  ]);
+                                }}
+                              />
+                            </ImageLayout>
+                            <img
+                              src={
+                                typeof item == "object"
+                                  ? URL.createObjectURL(item)
+                                  : getFirebaseImageUrl(item)
+                              }
+                            />
+                          </ImageItem>
+                        );
+                      })}
+                      <AddImageButton onClick={() => inputRef.current.click()}>
+                        <BiImageAdd />
+                      </AddImageButton>
+                    </Images>
+                  )}
+
+                  {certificateImages.length == 0 && (
+                    <AddImageButton onClick={() => inputRef.current.click()}>
+                      <BiImageAdd />
+                      <span>Add Image</span>
+                    </AddImageButton>
+                  )}
+                  <input ref={inputRef} onChange={handleCertificateChange} type="file" multiple />
+                </ImageContainer>
+                <ButtonContainer>
+                  <Button1 onClick={(ev) => onUpdateCertificate(ev)}>Save</Button1>
                 </ButtonContainer>
               </>
             )}
@@ -587,7 +803,7 @@ export default function DesignerProfile() {
             )}
           </LeftForm>
           <RightForm>
-            <Images>
+            <ImagesAvatar>
               <div>
                 <Avatar
                   src={
@@ -601,13 +817,14 @@ export default function DesignerProfile() {
               </div>
 
               <input onChange={handleImageChange} type="file" ref={fileRef} />
-            </Images>
+            </ImagesAvatar>
             <p>Maximum file size 1 MB</p>
             <Button1 onClick={onClickSelectImage}>Select Avatar</Button1>
           </RightForm>
         </Form>
       </Container>
       {isSuccess && <SuccessPopUp message={"success"} action={() => setIsSuccess()} />}
+      {imageError && <ErrorPopUp message={imageError} action={() => setImageError()} />}
     </>
   );
 }

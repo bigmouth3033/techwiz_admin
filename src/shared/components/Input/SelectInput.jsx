@@ -16,9 +16,17 @@ const Input = styled(Select)`
   }
 `;
 
-export default function SelectInput({ state, setState, options, selectRef, placeholder }) {
+export default function SelectInput({
+  state,
+  setState,
+  options,
+  selectRef,
+  placeholder,
+  className,
+}) {
   return (
     <Input
+      className={className}
       placeholder={placeholder}
       ref={selectRef}
       value={state}

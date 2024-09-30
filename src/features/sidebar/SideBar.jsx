@@ -5,7 +5,7 @@ import { IoIosArrowForward } from "react-icons/io";
 import { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { Tooltip } from "react-tooltip";
-import logo from "./assets/images/logo-v.png";
+import logo from "./assets/images/logo-11.png";
 import ReactDOM from "react-dom";
 import { adminRequest } from "@/shared/api/adminApi";
 

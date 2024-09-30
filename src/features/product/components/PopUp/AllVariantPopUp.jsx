@@ -138,33 +138,35 @@ export default function AllVariantPopUp({ action, state, setState }) {
             <span>Compare price</span>
           </div>
           {state.map((item, key) => {
-            return (
-              <div key={key}>
-                <span>{item.variant.join("/")}</span>
-                <TextInput
-                  placeholder={0}
-                  state={prices[key]}
-                  setState={(value) => {
-                    if (regex.test(value) || value == "") {
-                      const newList = [...prices];
-                      newList[key] = value;
-                      setPrices(newList);
-                    }
-                  }}
-                />
-                <TextInput
-                  placeholder={0}
-                  state={fakePrices[key]}
-                  setState={(value) => {
-                    if (regex.test(value) || value == "") {
-                      const newList = [...fakePrices];
-                      newList[key] = value;
-                      setFakePrices(newList);
-                    }
-                  }}
-                />
-              </div>
-            );
+            if (item.selected == true) {
+              return (
+                <div key={key}>
+                  <span>{item.variant.join("/")}</span>
+                  <TextInput
+                    placeholder={0}
+                    state={prices[key]}
+                    setState={(value) => {
+                      if (regex.test(value) || value == "") {
+                        const newList = [...prices];
+                        newList[key] = value;
+                        setPrices(newList);
+                      }
+                    }}
+                  />
+                  <TextInput
+                    placeholder={0}
+                    state={fakePrices[key]}
+                    setState={(value) => {
+                      if (regex.test(value) || value == "") {
+                        const newList = [...fakePrices];
+                        newList[key] = value;
+                        setFakePrices(newList);
+                      }
+                    }}
+                  />
+                </div>
+              );
+            }
           })}
         </ContentBody>
       </Content>

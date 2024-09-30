@@ -1,19 +1,26 @@
 import axiosAdmin from "@/shared/api/axiosAdmin";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-export const getApprovedDesignerRequest = (pageNumber, pageSize, search) => {
-  const request = async (pageNumber, pageSize, search) => {
+export const getApprovedDesignerRequest = (
+  pageNumber,
+  pageSize,
+  year,
+  status,
+  specialize,
+  search
+) => {
+  const request = async (pageNumber, pageSize, year, status, specialize, search) => {
     const response = await axiosAdmin.get("DesignerAdmin/approved_list", {
-      params: { pageNumber, pageSize, search },
+      params: { pageNumber, pageSize, year, status, specialize, search },
     });
 
     return response.data;
   };
 
   return useQuery({
-    queryKey: ["approved-list", pageNumber, pageSize, search],
+    queryKey: ["approved-list", pageNumber, pageSize, year, status, specialize, search],
     queryFn: () => {
-      return request(pageNumber, pageSize, search);
+      return request(pageNumber, pageSize, year, status, specialize, search);
     },
     retry: 0,
   });

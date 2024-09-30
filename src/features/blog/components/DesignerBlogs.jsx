@@ -1,23 +1,23 @@
 import React, { useState, useCallback } from "react";
-import { FilterBlogByStatus } from "./api/blogApi";
-import "./assets/css/blog.css";
 import { useNavigate } from "react-router-dom";
 import getFirebaseImageUrl from "@/shared/utils/getFireBaseImage";
 import styled, { css } from "styled-components";
 import Avatar from "react-avatar";
 import Button2 from "@/shared/components/Button/Button2";
-import { ActiveBlog } from "./api/blogApi";
 import Pagination from "@/shared/components/Pagination/pagination";
-import SelectReact from "react-select";
-import Button1 from "@/shared/components/Button/Button1";
 import TextInput from "@/shared/components/Input/TextInput";
 import { Link } from "react-router-dom";
 import SelectInput from "@/shared/components/Input/SelectInput";
+import { getBlogByDesignerRequest } from "../api/blogApi";
 
 const StyledContainer = styled.div`
   margin: 2rem;
   padding: 2rem;
   background-color: white;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 `;
 
 const TableContent = styled.table`
@@ -196,25 +196,12 @@ const byOptions = [
 
 const CustomLink = styled(Link)``;
 
-export default function Blogs() {
+export default function DesignerBlogs() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSeach] = useState("");
-  const [status, setStatus] = useState(true);
   const navigate = useNavigate();
-  const activeBlog = ActiveBlog();
+  const [search, setSeach] = useState("");
   const [filterStatus, setFilterStatus] = useState(activeOptions[0]);
-  const [isFilterDropDown, setIsFilterDropDown] = useState(false);
-  const [by, setBy] = useState([]);
-  const [designerName, setDesignerName] = useState("");
-
-  const filteredByStatus = FilterBlogByStatus(
-    currentPage,
-    10,
-    filterStatus.value,
-    by?.map((item) => item.value),
-    designerName,
-    search
-  );
+  const getBlogByDesigner = getBlogByDesignerRequest(currentPage, 10, filterStatus.value, search);
 
   const convertDate = (dateStr) => {
     const dateObj = new Date(dateStr);
@@ -238,7 +225,7 @@ export default function Blogs() {
     activeBlog.mutate(formData, {
       onSuccess: (response) => {
         if (response.status == 200) {
-          filteredByStatus.refetch();
+          getBlogByDesigner.refetch();
         }
       },
     });
@@ -260,27 +247,6 @@ export default function Blogs() {
   return (
     <StyledContainer>
       <SearchContainer>
-        <FilterBox>
-          <Button1 onClick={() => setIsFilterDropDown((prev) => !prev)}>Filter Option</Button1>
-          {isFilterDropDown && (
-            <FilterDropDown>
-              <div>
-                <h5>Write by</h5>
-                <SelectReact
-                  value={by}
-                  onChange={setBy}
-                  closeMenuOnSelect={false}
-                  isMulti
-                  options={byOptions}
-                />
-              </div>
-              <div>
-                <h5>By Designer</h5>
-                <TextInput state={designerName} setState={setDesignerName} />
-              </div>
-            </FilterDropDown>
-          )}
-        </FilterBox>
         <TextInput state={search} setState={setSeach} placeholder={"Search"} />
         <CustomSelectInput
           state={filterStatus}
@@ -293,14 +259,14 @@ export default function Blogs() {
         <thead>
           <tr>
             <th>Name</th>
-            <th>By</th>
+
             <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {filteredByStatus.isSuccess &&
-            filteredByStatus.data.data.map((blog, index) => {
+          {getBlogByDesigner.isSuccess &&
+            getBlogByDesigner.data.data.map((blog, index) => {
               return (
                 <tr key={index}>
                   <td>
@@ -314,36 +280,9 @@ export default function Blogs() {
                       </div>
                     </EmailColumn>
                   </td>
-                  <td>
-                    {blog.interior_designer_id ? (
-                      <EmailColumn>
-                        <Avatar
-                          round
-                          size="60"
-                          name={blog.interior_designer.first_name}
-                          src={getFirebaseImageUrl(blog.interior_designer.avatar)}
-                        />
-                        <div>
-                          <CustomLink to={"/designer_detail?id=" + blog.interior_designer.user_id}>
-                            {blog.interior_designer.first_name}
-                          </CustomLink>
-                          <span>{blog.interior_designer.yearsofexperience} Year of experience</span>
-                        </div>
-                      </EmailColumn>
-                    ) : (
-                      <EmailColumn>
-                        <Avatar round size="60" name={"Admin"} />
-                        <div>
-                          <span>Post by Admin</span>
-                        </div>
-                      </EmailColumn>
-                    )}
-                  </td>
                   <td>{blog.status ? <Active>Active</Active> : <Deactive>Not active</Deactive>}</td>
                   <td>
-                    <Button2 onClick={() => onChangeBlog(blog.id, blog.status ? true : false)}>
-                      {blog.status ? "Deactivate" : "Activate"}
-                    </Button2>
+                    <Button2 onClick={() => navigate("/getblogbyid?id=" + blog.id)}>Detail</Button2>
                   </td>
                 </tr>
               );
@@ -352,11 +291,11 @@ export default function Blogs() {
       </TableContent>
 
       <Footer>
-        {filteredByStatus.isSuccess && (
+        {getBlogByDesigner.isSuccess && (
           <Pagination
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
-            totalPage={filteredByStatus.data.totalPages}
+            totalPage={getBlogByDesigner.data.totalPages}
           />
         )}
       </Footer>

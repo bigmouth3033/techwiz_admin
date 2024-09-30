@@ -1,7 +1,7 @@
 import axiosAdmin from "@/shared/api/axiosAdmin";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
-
+import qs from "qs";
 export const getAllBlog = () => {
   const request = async () => {
     const response = await axiosAdmin.get("blog");
@@ -36,15 +36,25 @@ export function GetBlogById(id) {
   });
 }
 
-const filterBlogByStatus = async (status, name) => {
-  const response = await axiosAdmin.get("blog/getblogbystatus?status=" + status + "&name=" + name);
+const filterBlogByStatus = async (pageNumber, pageSize, status, by, designerName, name) => {
+  const response = await axiosAdmin.get("blog/getblogbystatus", {
+    params: {
+      pageNumber,
+      pageSize,
+      status,
+      by,
+      designerName,
+      name,
+    },
+    paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "repeat" }),
+  });
   return response.data;
 };
 
-export function FilterBlogByStatus(status, name) {
+export function FilterBlogByStatus(pageNumber, pageSize, status, by, designerName, name) {
   return useQuery({
-    queryKey: ["filterBlogByStatus", status, name],
-    queryFn: () => filterBlogByStatus(status, name),
+    queryKey: ["filterBlogByStatus", pageNumber, pageSize, status, by, designerName, name],
+    queryFn: () => filterBlogByStatus(pageNumber, pageSize, status, by, designerName, name),
   });
 }
 
@@ -84,4 +94,34 @@ export const CreateBlogMutation = () => {
   });
 
   return blogMutation;
+};
+
+export const updateBlogRequest = () => {
+  const request = async (payload) => {
+    const response = await axiosAdmin.put("blog/update_blog", payload);
+    return response.data;
+  };
+
+  return useMutation({
+    mutationFn: request,
+  });
+};
+
+export const getBlogByDesignerRequest = (pageNumber, pageSize, status, name) => {
+  const request = async () => {
+    const response = await axiosAdmin.get("Blog/get_blog_by_designer", {
+      params: {
+        pageNumber,
+        pageSize,
+        status,
+        name,
+      },
+    });
+    return response.data;
+  };
+
+  return useQuery({
+    queryKey: ["designer_blog", pageNumber, pageSize, status, name],
+    queryFn: () => request(pageNumber, pageSize, status, name),
+  });
 };
