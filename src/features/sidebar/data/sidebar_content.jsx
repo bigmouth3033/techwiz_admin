@@ -8,6 +8,8 @@ import { CgProfile } from "react-icons/cg";
 import { LuLoader } from "react-icons/lu";
 import { ImBlog } from "react-icons/im";
 import { FaImages } from "react-icons/fa";
+import { FaBookOpenReader } from "react-icons/fa6";
+import { FaPhoneAlt } from "react-icons/fa";
 
 const sidebar_content = [
   {
@@ -20,14 +22,21 @@ const sidebar_content = [
   {
     name: "Designer Consultation",
     type: "button",
-    icon: <CgProfile />,
+    icon: <FaPhoneAlt />,
     link: "/consultion_list",
+    role: "designer",
+  },
+  {
+    name: "Designer Stories",
+    type: "button",
+    icon: <FaBookOpenReader />,
+    link: "/stories",
     role: "designer",
   },
   {
     name: "Consultation List",
     type: "button",
-    icon: <CgProfile />,
+    icon: <FaPhoneAlt />,
     link: "/admin_consultion_list",
     role: "admin",
   },
@@ -63,7 +72,25 @@ const sidebar_content = [
       {
         name: "List Gallery",
         icon: <IoMdAdd />,
-        link: "/list_gallery",
+        link: "/list_gallery_admin",
+      },
+    ],
+  },
+  {
+    name: "Gallery",
+    type: "group",
+    icon: <FaImages />,
+    role: "designer",
+    children: [
+      {
+        name: "Add Gallery",
+        icon: <CiViewList />,
+        link: "/add_gallery",
+      },
+      {
+        name: "List Gallery",
+        icon: <IoMdAdd />,
+        link: "/list_gallery_designer",
       },
     ],
   },

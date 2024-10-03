@@ -30,7 +30,7 @@ import { Link } from "react-router-dom";
 
 const Container = styled.div`
   margin: 2rem;
-  padding: 2rem;
+  padding: 1rem;
   margin-bottom: 5rem;
 
   & margin {
@@ -42,6 +42,10 @@ const Container = styled.div`
     font-size: 15px;
     font-weight: 600;
     color: rgba(0, 0, 0, 0.6);
+  }
+
+  & .error {
+    color: red;
   }
 `;
 
@@ -60,7 +64,8 @@ const InputContainer = styled.div`
 
 const LeftContainer = styled.div`
   background-color: white;
-  padding: 1rem;
+  padding: 0 1rem;
+  padding-bottom: 1rem;
   box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
 `;
 
@@ -394,7 +399,7 @@ const createOption = (label) => ({
 
 export default function Product() {
   const createNewProduct = createNewProductRequest();
-  const [errors, setErrors] = useState();
+  const [errors, setErrors] = useState({});
   const [images, setImages] = useState([]);
   const [imageError, setImageError] = useState();
   const [state, dispatch, ACTIONS] = useCreateProductReducer();
@@ -405,7 +410,6 @@ export default function Product() {
   const inputRef = useRef();
   const [checkedAll, setCheckedAll] = useState(false);
   const [colorPopUp, setColorPopUp] = useState(false);
-
   const [inputValue, setInputValue] = useState(["", "", "", "", ""]);
   const [value, setValue] = useState([[], [], [], [], []]);
 
@@ -418,12 +422,13 @@ export default function Product() {
           try {
             dispatch({
               type: ACTIONS.CHANGE_COLOR,
-              next: {
+              next: [
                 ...state.colors,
-                [createOption(inputValue[index]).value]: chroma(
-                  createOption(inputValue[index]).value
-                ).hex(),
-              },
+                {
+                  color: createOption(inputValue[index]).value,
+                  hex: hexTo32BitARGB(chroma(createOption(inputValue[index]).value).hex()),
+                },
+              ],
             });
           } catch {
             return;
@@ -515,39 +520,87 @@ export default function Product() {
   }, [value]);
 
   const onCreateProduct = () => {
-    if (value.find((item, index) => index < state.variants.length && item.length == 0)) {
-      setErrors("Variant cannot be empty");
-      return;
+    let isOk = true;
+
+    if (!state.productName) {
+      setErrors((prev) => {
+        return { ...prev, name: "Name cannot be empty" };
+      });
+      isOk = false;
+    } else {
+      setErrors((prev) => {
+        return { ...prev, name: null };
+      });
+    }
+
+    if (!state.description) {
+      setErrors((prev) => {
+        return { ...prev, description: "Description cannot be empty" };
+      });
+      isOk = false;
+    } else {
+      setErrors((prev) => {
+        return { ...prev, description: null };
+      });
     }
 
     if (state.images.length == 0) {
-      setErrors("You need atleast 1 image");
-      return;
+      setErrors((prev) => {
+        return { ...prev, image: "Image cannot be empty" };
+      });
+      isOk = false;
+    } else {
+      setErrors((prev) => {
+        return { ...prev, image: null };
+      });
     }
 
     if (state.variants.find((item) => !item || item.length == 0)) {
-      setErrors("Variant type cannot be empty");
-      return;
+      setErrors((prev) => {
+        return { ...prev, type: "Variant type cannot be empty" };
+      });
+      isOk = false;
+    } else {
+      setErrors((prev) => {
+        return { ...prev, type: null };
+      });
     }
 
-    const formData = new FormData();
-    formData.append("ProductName", state.productName);
-    formData.append("Brand", state.brand.value);
-    formData.append("Description", state.description);
-    formData.append("Status", state.active);
-    formData.append("RoomFuncion", state.roomFuncion.value);
+    if (value.find((item, index) => index < state.variants.length && item.length == 0)) {
+      setErrors((prev) => {
+        return { ...prev, variant: "Variant cannot be empty" };
+      });
+      isOk = false;
+    } else {
+      setErrors((prev) => {
+        return { ...prev, variant: null };
+      });
+    }
 
-    state.images.forEach((item) => formData.append("Images", item));
-    state.variants.forEach((item) => formData.append("Variants", item.value));
-    state.variant_detail.forEach((item) => formData.append("VariantsJSON", JSON.stringify(item)));
+    if (isOk) {
+      const formData = new FormData();
+      formData.append("ProductName", state.productName);
+      formData.append("Brand", state.brand.value);
+      formData.append("Description", state.description);
+      formData.append("Status", state.active);
+      formData.append("RoomFuncion", state.roomFuncion.value);
 
-    createNewProduct.mutate(formData, {
-      onSuccess: (response) => {
-        if (response.status == 200) {
-          window.location.reload();
-        }
-      },
-    });
+      if (state.colors.length != 0) {
+        state.colors.forEach((color) => formData.append("colorJson", JSON.stringify(color)));
+      }
+
+      state.images.forEach((item) => formData.append("Images", item));
+      state.variants.forEach((item) => formData.append("Variants", item.value));
+      state.variant_detail.forEach((item) => formData.append("VariantsJSON", JSON.stringify(item)));
+
+      createNewProduct.mutate(formData, {
+        onSuccess: (response) => {
+          if (response.status == 200) {
+            window.location.reload();
+          }
+        },
+      });
+    }
   };
 
   useEffect(() => {
@@ -583,6 +636,7 @@ export default function Product() {
                 setState={(value) => dispatch({ type: ACTIONS.CHANGE_NAME, next: value })}
               />
             </InputContainer>
+            {errors.name && <h5 className="error">{errors.name}</h5>}
 
             <SelectContainer>
               <InputContainer>
@@ -611,6 +665,8 @@ export default function Product() {
                 setState={(value) => dispatch({ type: ACTIONS.CHANGE_DESCRIPTION, next: value })}
               />
             </InputContainer>
+
+            {errors.description && <h5 className="error">{errors.description}</h5>}
 
             <ImageContainer>
               <h5>Image container</h5>
@@ -647,7 +703,7 @@ export default function Product() {
               )}
               <input ref={inputRef} onChange={handleImageChange} type="file" multiple />
             </ImageContainer>
-
+            {errors.image && <h5 className="error">{errors.image}</h5>}
             <VariantContainer>
               <h5>
                 Variants{" "}
@@ -673,6 +729,9 @@ export default function Product() {
                     <FaTrash
                       className="trash"
                       onClick={() => {
+                        if (item.value == "Color") {
+                          dispatch({ type: ACTIONS.CHANGE_COLOR, next: [] });
+                        }
                         if (state.variants.length == 1) {
                           setIsAlert("You need at least 1 variant ");
                           return;
@@ -705,14 +764,16 @@ export default function Product() {
                       isMulti
                       menuIsOpen={false}
                       onChange={(newValue) => {
+                        console.log(newValue);
                         if (item.value == "Color") {
                           const arr = newValue.map((newItem) => newItem.value);
-                          Object.keys(state.colors).forEach((color) => {
-                            if (!arr.includes(color)) {
-                              delete state.colors[color];
-                            }
+
+                          dispatch({
+                            type: ACTIONS.CHANGE_COLOR,
+                            next: [
+                              ...state.colors.filter((colorObj) => arr.includes(colorObj.color)),
+                            ],
                           });
-                          dispatch({ type: ACTIONS.CHANGE_COLOR, next: { ...state.colors } });
                         }
                         const newestValue = [...value];
                         newestValue[index] = newValue;
@@ -804,6 +865,8 @@ export default function Product() {
                 );
               })}
             </VariantItemContainer>
+            {errors.variant && <h5 className="error">{errors.variant}</h5>}
+            {errors.type && <h5 className="error">{errors.type}</h5>}
           </LeftContainer>
           <RightContainer>
             <ShowInfo>
@@ -849,7 +912,7 @@ export default function Product() {
         />
       )}
       {isAlert && <AlertPopUp message={isAlert} action={() => setIsAlert("")} />}
-      {errors && <ErrorPopUp message={errors} action={() => setErrors()} />}
+
       {colorPopUp && (
         <ColorPopUp
           action={() => setColorPopUp()}
@@ -861,4 +924,23 @@ export default function Product() {
       )}
     </>
   );
+}
+
+function hexTo32BitARGB(hex) {
+  const color = chroma(hex);
+
+  // Extract RGB components (as integers)
+  const [r, g, b] = color.rgb();
+
+  // Alpha (Opacity) - assuming fully opaque (255)
+  const a = 255; // or color.alpha() * 255 for actual alpha value
+
+  // Convert to 32-bit unsigned integer
+  const argb = ((a << 24) | (r << 16) | (g << 8) | b) >>> 0; // Ensure it's unsigned
+
+  // Convert to hexadecimal format with ARGB structure
+  const argbHex = argb.toString(16).padStart(8, "0"); // Pad with zeros if necessary
+
+  // Add the '0x' prefix to denote hexadecimal format
+  return `0x${argbHex}`;
 }

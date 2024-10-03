@@ -231,7 +231,7 @@ export default function PendingDesignerDetail() {
       setPortfolio(data.portfolio);
       setAvatar(data.avatar);
 
-      const images = data.certificate.split(";").filter((item) => item.length != 0);
+      const images = data.certificate.split("; ").filter((item) => item.length != 0);
 
       setCertificateImages(images);
     }

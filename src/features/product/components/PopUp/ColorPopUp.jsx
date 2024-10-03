@@ -65,15 +65,11 @@ export default function ColorPopUp({ action, state, setState }) {
       </Header>
       <hr />
       <Content>
-        {Object.keys(state).map((colorName, index) => {
+        {state.map((colorObj, index) => {
           return (
             <div key={index}>
-              <p>{colorName}</p>
-              <TextInput
-                state={state[colorName]}
-                setState={() => {}}
-                placeholder={"Input hexa code"}
-              />
+              <p>{colorObj.color}</p>
+              <TextInput state={colorObj.hex} setState={() => {}} placeholder={"Input hexa code"} />
             </div>
           );
         })}

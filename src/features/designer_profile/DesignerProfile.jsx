@@ -517,7 +517,7 @@ export default function DesignerProfile() {
       setSpecialize(data.specialization);
       setYear(data.yearsofexperience);
       setPortfolio(data.portfolio);
-      const images = data.certificate.split(";").filter((item) => item.length != 0);
+      const images = data.certificate.split("; ").filter((item) => item.length != 0);
 
       setCertificateImages(images);
 

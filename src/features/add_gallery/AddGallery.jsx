@@ -20,6 +20,8 @@ import { createGalleryRequest } from "./api/addGalleryApi";
 import WaitingPopUp from "@/shared/components/PopUp/WaitingPopUp";
 import { BiImageAdd } from "react-icons/bi";
 import { AiOutlineClose } from "react-icons/ai";
+import { useNavigate } from "react-router-dom";
+import { adminRequest } from "@/shared/api/adminApi";
 
 const Container = styled.div`
   margin: 2rem;
@@ -313,7 +315,9 @@ export default function AddGallery() {
   const [imageError, setImageError] = useState(false);
   const createGallery = createGalleryRequest();
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
   const inputRef = useRef();
+  const admin = adminRequest();
 
   const getProductById = getProductByIdRequest(state.product_list);
   const searchProduct = searchProductRequest(search);
@@ -478,7 +482,11 @@ export default function AddGallery() {
       createGallery.mutate(formData, {
         onSuccess: (response) => {
           if (response.status == 200) {
-            alert("sss");
+            if (admin.data.data.role == "admin") {
+              navigate("/list_gallery_admin");
+            } else {
+              navigate("/list_gallery_designer");
+            }
           }
         },
       });

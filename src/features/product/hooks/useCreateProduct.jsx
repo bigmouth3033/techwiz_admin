@@ -49,7 +49,7 @@ export default function useCreateProductReducer() {
     variants: [variantOptions[0]],
     variant_detail: [],
     active: true,
-    colors: {},
+    colors: [],
   });
 
   return [state, dispatch, ACTIONS];

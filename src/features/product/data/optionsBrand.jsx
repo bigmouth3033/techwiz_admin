@@ -1,4 +1,5 @@
 const brandOptions = [
+  { label: "Amazon", value: "Amazon" },
   { label: "IKEA", value: "IKEA" },
   { label: "West Elm", value: "West Elm" },
   { label: "Pottery Barn", value: "Pottery Barn" },

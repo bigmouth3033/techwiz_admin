@@ -5,8 +5,6 @@ import Login from "@/features/login/Login";
 import CustomAdmin from "@/features/custom_admin/CustomAdmin";
 import EmployeeList from "@/features/employee_list/EmployeeList";
 import EmployeeUpdate from "@/features/employee_update/EmployeeUpdate";
-import Chat from "@/features/chat/Chat";
-
 import Product from "@/features/product/Product";
 import DesignerRegister from "@/features/designer_register/DesignerRegister";
 import PendingApprovedDesigner from "@/features/pending_approved_designer/PendingApprovedDesigner";
@@ -16,9 +14,7 @@ import DesignerConsultation from "@/features/designer_consultation/DesignerConsu
 import ProductList from "@/features/product_list/ProductList";
 import ForgotPassword from "@/features/forgot_password/ForgotPassword";
 import Forgot from "@/features/forgot/Forgot";
-import GalleryList from "@/features/gallery_list/GalleryList";
 import Order from "@/features/Order/Order";
-
 import OrderDetail from "@/features/OrderDetail/OrderDetail";
 import Blogs from "@/features/blog/Blogs";
 import CreateBlog from "@/features/blog/components/CreateBlog";
@@ -29,6 +25,9 @@ import DesignerDetail from "@/features/designer_detail/DesignerDetail";
 import DesignerBlogs from "@/features/blog/components/DesignerBlogs";
 import AddGallery from "@/features/add_gallery/AddGallery";
 import UpdateGallery from "@/features/update-gallery/UpdateGallery";
+import AdminGalleries from "@/features/admin_galleries/AdminGalleries";
+import DesignerGalleries from "@/features/designer_galleries/DesignerGalleries";
+import DesignerStories from "@/features/designer_stories/DesignerStories";
 
 const router = createBrowserRouter([
   {
@@ -51,11 +50,6 @@ const router = createBrowserRouter([
         path: "/employee_update",
         element: <EmployeeUpdate />,
       },
-      {
-        path: "/chat",
-        element: <Chat />,
-      },
-
       {
         path: "/new_product",
         element: <Product />,
@@ -81,8 +75,12 @@ const router = createBrowserRouter([
         element: <DesignerConsultation />,
       },
       {
-        path: "/list_gallery",
-        element: <GalleryList />,
+        path: "/list_gallery_admin",
+        element: <AdminGalleries />,
+      },
+      {
+        path: "/list_gallery_designer",
+        element: <DesignerGalleries />,
       },
       {
         path: "/list_order",
@@ -127,6 +125,10 @@ const router = createBrowserRouter([
       {
         path: "/add_gallery",
         element: <AddGallery />,
+      },
+      {
+        path: "/stories",
+        element: <DesignerStories />,
       },
     ],
   },
