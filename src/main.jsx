@@ -14,7 +14,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
-      <RouterProvider router={router} basename="/techwiz_admin" />
+      <RouterProvider router={router} />
     </QueryClientProvider>
   </StrictMode>
 );
