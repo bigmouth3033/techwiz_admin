@@ -31,7 +31,7 @@ import DesignerStories from "@/features/designer_stories/DesignerStories";
 
 const router = createBrowserRouter([
   {
-    path: "/techwiz_admin",
+    path: "/techwiz_admin/",
     element: <AdminLayout />,
     children: [
       {
