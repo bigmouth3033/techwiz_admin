@@ -31,103 +31,103 @@ import DesignerStories from "@/features/designer_stories/DesignerStories";
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/techwiz_admin",
     element: <AdminLayout />,
     children: [
       {
-        path: "/",
+        path: "",
         element: <Dashboard />,
       },
       {
-        path: "/custom_admin",
+        path: "custom_admin",
         element: <CustomAdmin />,
       },
       {
-        path: "/employee_list",
+        path: "employee_list",
         element: <EmployeeList />,
       },
       {
-        path: "/employee_update",
+        path: "employee_update",
         element: <EmployeeUpdate />,
       },
       {
-        path: "/new_product",
+        path: "new_product",
         element: <Product />,
       },
       {
-        path: "/product_list",
+        path: "product_list",
         element: <ProductList />,
       },
       {
-        path: "/pending_approved_designer",
+        path: "pending_approved_designer",
         element: <PendingApprovedDesigner />,
       },
       {
-        path: "/designer_list",
+        path: "designer_list",
         element: <DesignerList />,
       },
       {
-        path: "/designer_profile",
+        path: "designer_profile",
         element: <DesignerProfile />,
       },
       {
-        path: "/consultion_list",
+        path: "consultion_list",
         element: <DesignerConsultation />,
       },
       {
-        path: "/list_gallery_admin",
+        path: "list_gallery_admin",
         element: <AdminGalleries />,
       },
       {
-        path: "/list_gallery_designer",
+        path: "list_gallery_designer",
         element: <DesignerGalleries />,
       },
       {
-        path: "/list_order",
+        path: "list_order",
         element: <Order />,
       },
       {
-        path: "/update_gallery",
+        path: "update_gallery",
         element: <UpdateGallery />,
       },
       {
-        path: "/order_detail",
+        path: "order_detail",
         element: <OrderDetail />,
       },
       {
-        path: "/blog",
+        path: "blog",
         element: <Blogs />,
       },
       {
-        path: "/getblogbyid",
+        path: "getblogbyid",
         element: <Blog />,
       },
       {
-        path: "/create_blog",
+        path: "create_blog",
         element: <CreateBlog />,
       },
       {
-        path: "/admin_consultion_list",
+        path: "admin_consultion_list",
         element: <AdminConsultationList />,
       },
       {
-        path: "/pending_detail",
+        path: "pending_detail",
         element: <PendingDesignerDetail />,
       },
       {
-        path: "/designer_detail",
+        path: "designer_detail",
         element: <DesignerDetail />,
       },
       {
-        path: "/designer_blogs",
+        path: "designer_blogs",
         element: <DesignerBlogs />,
       },
       {
-        path: "/add_gallery",
+        path: "add_gallery",
         element: <AddGallery />,
       },
       {
-        path: "/stories",
+        path: "stories",
         element: <DesignerStories />,
       },
     ],
