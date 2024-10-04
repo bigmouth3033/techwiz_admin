@@ -29,125 +29,128 @@ import AdminGalleries from "@/features/admin_galleries/AdminGalleries";
 import DesignerGalleries from "@/features/designer_galleries/DesignerGalleries";
 import DesignerStories from "@/features/designer_stories/DesignerStories";
 
-const router = createBrowserRouter([
-  {
-    path: "/techwiz_admin/",
-    element: <AdminLayout />,
-    children: [
-      {
-        path: "",
-        element: <Dashboard />,
-      },
-      {
-        path: "custom_admin",
-        element: <CustomAdmin />,
-      },
-      {
-        path: "employee_list",
-        element: <EmployeeList />,
-      },
-      {
-        path: "employee_update",
-        element: <EmployeeUpdate />,
-      },
-      {
-        path: "new_product",
-        element: <Product />,
-      },
-      {
-        path: "product_list",
-        element: <ProductList />,
-      },
-      {
-        path: "pending_approved_designer",
-        element: <PendingApprovedDesigner />,
-      },
-      {
-        path: "designer_list",
-        element: <DesignerList />,
-      },
-      {
-        path: "designer_profile",
-        element: <DesignerProfile />,
-      },
-      {
-        path: "consultion_list",
-        element: <DesignerConsultation />,
-      },
-      {
-        path: "list_gallery_admin",
-        element: <AdminGalleries />,
-      },
-      {
-        path: "list_gallery_designer",
-        element: <DesignerGalleries />,
-      },
-      {
-        path: "list_order",
-        element: <Order />,
-      },
-      {
-        path: "update_gallery",
-        element: <UpdateGallery />,
-      },
-      {
-        path: "order_detail",
-        element: <OrderDetail />,
-      },
-      {
-        path: "blog",
-        element: <Blogs />,
-      },
-      {
-        path: "getblogbyid",
-        element: <Blog />,
-      },
-      {
-        path: "create_blog",
-        element: <CreateBlog />,
-      },
-      {
-        path: "admin_consultion_list",
-        element: <AdminConsultationList />,
-      },
-      {
-        path: "pending_detail",
-        element: <PendingDesignerDetail />,
-      },
-      {
-        path: "designer_detail",
-        element: <DesignerDetail />,
-      },
-      {
-        path: "designer_blogs",
-        element: <DesignerBlogs />,
-      },
-      {
-        path: "add_gallery",
-        element: <AddGallery />,
-      },
-      {
-        path: "stories",
-        element: <DesignerStories />,
-      },
-    ],
-  },
-  {
-    path: "/forgotPassword",
-    element: <ForgotPassword />,
-  },
-  {
-    path: "/forgot",
-    element: <Forgot />,
-  },
-  {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/designer_register",
-    element: <DesignerRegister />,
-  },
-]);
+const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      element: <AdminLayout />,
+      children: [
+        {
+          path: "/",
+          element: <Dashboard />,
+        },
+        {
+          path: "/custom_admin",
+          element: <CustomAdmin />,
+        },
+        {
+          path: "/employee_list",
+          element: <EmployeeList />,
+        },
+        {
+          path: "/employee_update",
+          element: <EmployeeUpdate />,
+        },
+        {
+          path: "/new_product",
+          element: <Product />,
+        },
+        {
+          path: "/product_list",
+          element: <ProductList />,
+        },
+        {
+          path: "/pending_approved_designer",
+          element: <PendingApprovedDesigner />,
+        },
+        {
+          path: "/designer_list",
+          element: <DesignerList />,
+        },
+        {
+          path: "/designer_profile",
+          element: <DesignerProfile />,
+        },
+        {
+          path: "/consultion_list",
+          element: <DesignerConsultation />,
+        },
+        {
+          path: "/list_gallery_admin",
+          element: <AdminGalleries />,
+        },
+        {
+          path: "/list_gallery_designer",
+          element: <DesignerGalleries />,
+        },
+        {
+          path: "/list_order",
+          element: <Order />,
+        },
+        {
+          path: "/update_gallery",
+          element: <UpdateGallery />,
+        },
+        {
+          path: "/order_detail",
+          element: <OrderDetail />,
+        },
+        {
+          path: "/blog",
+          element: <Blogs />,
+        },
+        {
+          path: "/getblogbyid",
+          element: <Blog />,
+        },
+        {
+          path: "/create_blog",
+          element: <CreateBlog />,
+        },
+        {
+          path: "/admin_consultion_list",
+          element: <AdminConsultationList />,
+        },
+        {
+          path: "/pending_detail",
+          element: <PendingDesignerDetail />,
+        },
+        {
+          path: "/designer_detail",
+          element: <DesignerDetail />,
+        },
+        {
+          path: "/designer_blogs",
+          element: <DesignerBlogs />,
+        },
+        {
+          path: "/add_gallery",
+          element: <AddGallery />,
+        },
+        {
+          path: "/stories",
+          element: <DesignerStories />,
+        },
+      ],
+    },
+    {
+      path: "/forgotPassword",
+      element: <ForgotPassword />,
+    },
+    {
+      path: "/forgot",
+      element: <Forgot />,
+    },
+    {
+      path: "/login",
+      element: <Login />,
+    },
+    {
+      path: "/designer_register",
+      element: <DesignerRegister />,
+    },
+  ],
+  { basename: "/techwiz_admin" }
+);
 
 export default router;
