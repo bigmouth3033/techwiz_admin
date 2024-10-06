@@ -18,6 +18,7 @@ import WebFont from "webfontloader";
 import { registerNewDesignerRequest } from "./api/designerRegisterApi";
 import { BiImageAdd } from "react-icons/bi";
 import { AiOutlineClose } from "react-icons/ai";
+import CropImagePopUp from "@/shared/components/PopUp/CropImagePopUp";
 
 const Container = styled.div`
   background-color: white;
@@ -214,6 +215,7 @@ const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PasswordRegex = /^[A-Za-z0-9]{6,}$/;
 
 export default function DesignerRegister() {
+  const [cropAvatar, setCropAvatar] = useState();
   const [avatarError, setAvatarError] = useState();
   const registerNewDesigner = registerNewDesignerRequest();
   let fileRef = useRef();
@@ -263,7 +265,7 @@ export default function DesignerRegister() {
         return;
       }
 
-      setAvatar(ev.target.files[0]);
+      setCropAvatar(ev.target.files[0]);
       setImageError(null);
       ev.target.value = null;
     }
@@ -670,6 +672,14 @@ export default function DesignerRegister() {
       {imageError && <ErrorPopUp message={imageError} action={() => setImageError("")} />}
       {alert && <AlertPopUp message={alert} action={() => setAlert("")} />}
       {avatarError && <AlertPopUp message={"Avatar is required"} action={() => setAvatarError()} />}
+      {cropAvatar && (
+        <CropImagePopUp
+          action={() => setCropAvatar()}
+          onSuccess={(image) => setAvatar(image)}
+          image={cropAvatar}
+          aspect={1 / 1}
+        />
+      )}
     </>
   );
 }

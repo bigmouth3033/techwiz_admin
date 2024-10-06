@@ -27,6 +27,7 @@ import ColorPopUp from "./components/PopUp/ColorPopUp";
 import { IoIosColorPalette } from "react-icons/io";
 import chroma from "chroma-js";
 import { Link } from "react-router-dom";
+import CropImagePopUp from "@/shared/components/PopUp/CropImagePopUp";
 
 const Container = styled.div`
   margin: 2rem;
@@ -398,6 +399,7 @@ const createOption = (label) => ({
 });
 
 export default function Product() {
+  const [imageCrop, setImageCrop] = useState();
   const createNewProduct = createNewProductRequest();
   const [errors, setErrors] = useState({});
   const [images, setImages] = useState([]);
@@ -482,7 +484,7 @@ export default function Product() {
         return;
       }
 
-      dispatch({ type: ACTIONS.CHANGE_IMAGES, next: [...state.images, ...ev.target.files] });
+      setImageCrop(ev.target.files[0]);
       setImageError(null);
       ev.target.value = null;
     }
@@ -701,7 +703,7 @@ export default function Product() {
                   <span>Add Image</span>
                 </AddImageButton>
               )}
-              <input ref={inputRef} onChange={handleImageChange} type="file" multiple />
+              <input ref={inputRef} onChange={handleImageChange} type="file" />
             </ImageContainer>
             {errors.image && <h5 className="error">{errors.image}</h5>}
             <VariantContainer>
@@ -920,6 +922,17 @@ export default function Product() {
           setState={() => {
             dispatch({ type: ACTIONS.CHANGE_COLOR, next: state.colors });
           }}
+        />
+      )}
+
+      {imageCrop && (
+        <CropImagePopUp
+          action={() => setImageCrop()}
+          onSuccess={(image) => {
+            dispatch({ type: ACTIONS.CHANGE_IMAGES, next: [...state.images, image] });
+          }}
+          image={imageCrop}
+          aspect={1 / 1}
         />
       )}
     </>

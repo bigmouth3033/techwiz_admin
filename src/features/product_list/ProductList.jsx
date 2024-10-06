@@ -17,6 +17,7 @@ import { changeProductStatusRequest } from "./api/productListApi";
 import ConfirmPopUp from "@/shared/components/PopUp/ConfirmPopUp";
 import getWords from "@/shared/utils/getWords";
 import SelectInput from "@/shared/components/Input/SelectInput";
+import { adminRequest } from "@/shared/api/adminApi";
 
 const Container = styled.div`
   background-color: white;
@@ -210,6 +211,7 @@ const activeOptions = [
 ];
 
 export default function ProductList() {
+  const admin = adminRequest();
   const [active, setActive] = useState(activeOptions[0]);
   const changeProductStatus = changeProductStatusRequest();
   const [search, setSeach] = useState("");
@@ -297,7 +299,7 @@ export default function ProductList() {
               <th>Functionality</th>
               <th>Added Date</th>
               <th>Status</th>
-              <th>ACTION</th>
+              {admin.data.data.role == "admin" && <th>ACTION</th>}
             </tr>
           </thead>
           <tbody>
@@ -318,11 +320,13 @@ export default function ProductList() {
                     <td>{item.functionality.name}</td>
                     <td>{formatDate(item.created_at)}</td>
                     <td>{item.status ? <Active>Active</Active> : <Deactive>Inactive</Deactive>}</td>
-                    <td>
-                      <Button2 onClick={() => setIsConfirm(item.id)}>
-                        {item.status ? "Deactive" : "Activate"}
-                      </Button2>
-                    </td>
+                    {admin.data.data.role == "admin" && (
+                      <td>
+                        <Button2 onClick={() => setIsConfirm(item.id)}>
+                          {item.status ? "Deactive" : "Activate"}
+                        </Button2>
+                      </td>
+                    )}
                   </tr>
                 );
               })}

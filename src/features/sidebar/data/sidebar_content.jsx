@@ -157,6 +157,13 @@ const sidebar_content = [
       },
     ],
   },
+  {
+    name: "Product",
+    type: "button",
+    icon: <TbCategory2 />,
+    role: "designer",
+    link: "/product_list",
+  },
 ];
 
 export default sidebar_content;

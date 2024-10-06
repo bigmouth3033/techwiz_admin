@@ -19,12 +19,14 @@ export const getDesignerStoryRequest = (designer_id, pageNumber, pageSize, date)
         designer_id,
         pageNumber,
         pageSize,
-        from: `${date.startDate.getFullYear()}-${
-          date.startDate.getMonth() + 1
-        }-${date.startDate.getDate()}`,
-        to: `${date.endDate.getFullYear()}-${
-          date.endDate.getMonth() + 1
-        }-${date.endDate.getDate()}`,
+        from: date.startDate
+          ? `${date.startDate.getFullYear()}-${
+              date.startDate.getMonth() + 1
+            }-${date.startDate.getDate()}`
+          : null,
+        to: date.endDate
+          ? `${date.endDate.getFullYear()}-${date.endDate.getMonth() + 1}-${date.endDate.getDate()}`
+          : null,
       },
     });
 

@@ -22,6 +22,7 @@ import { AiOutlineClose } from "react-icons/ai";
 import { BiImageAdd } from "react-icons/bi";
 import ErrorPopUp from "@/shared/components/PopUp/ErrorPopUp";
 import { updateCertificateRequest } from "./api/designerProfileApi";
+import CropImagePopUp from "@/shared/components/PopUp/CropImagePopUp";
 
 const Container = styled.div`
   background-color: white;
@@ -242,6 +243,7 @@ const AddImageButton = styled.button`
 const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function DesignerProfile() {
+  const [cropAvatar, setCropAvatar] = useState();
   const updateInfoDesigner = updateInfoDesignerRequest();
   const updateDowDesigner = updateDowDesignerRequest();
   const updatePortfolio = updatePortfolioRequest();
@@ -461,18 +463,20 @@ export default function DesignerProfile() {
         return;
       }
 
-      const formData = new FormData();
+      setCropAvatar(ev.target.files[0]);
 
-      formData.append("avatar", ev.target.files[0]);
+      // const formData = new FormData();
 
-      updateDesignerAvatar.mutate(formData, {
-        onSuccess: (response) => {
-          if (response.status == 200) {
-            getDesignerProfile.refetch();
-            admin.refetch();
-          }
-        },
-      });
+      // formData.append("avatar", ev.target.files[0]);
+
+      // updateDesignerAvatar.mutate(formData, {
+      //   onSuccess: (response) => {
+      //     if (response.status == 200) {
+      //       getDesignerProfile.refetch();
+      //       admin.refetch();
+      //     }
+      //   },
+      // });
       setImageError(null);
       ev.target.value = null;
     }
@@ -825,6 +829,25 @@ export default function DesignerProfile() {
       </Container>
       {isSuccess && <SuccessPopUp message={"success"} action={() => setIsSuccess()} />}
       {imageError && <ErrorPopUp message={imageError} action={() => setImageError()} />}
+      {cropAvatar && (
+        <CropImagePopUp
+          action={() => setCropAvatar()}
+          onSuccess={(image) => {
+            const formData = new FormData();
+            formData.append("avatar", image);
+            updateDesignerAvatar.mutate(formData, {
+              onSuccess: (response) => {
+                if (response.status == 200) {
+                  getDesignerProfile.refetch();
+                  admin.refetch();
+                }
+              },
+            });
+          }}
+          image={cropAvatar}
+          aspect={1 / 1}
+        />
+      )}
     </>
   );
 }

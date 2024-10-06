@@ -14,6 +14,11 @@ import PopUp from "@/shared/components/PopUp/PopUp";
 import XButton from "@/shared/components/Button/XButton";
 import { getCustomerOrderListRequest } from "./api/designerConsultationApi";
 import { useNavigate } from "react-router-dom";
+import Button1 from "@/shared/components/Button/Button1";
+import TextInput from "@/shared/components/Input/TextInput";
+import SelectInput from "@/shared/components/Input/SelectInput";
+import { DateRangePicker } from "react-date-range";
+import { addDays } from "date-fns";
 
 const Container = styled.div`
   background-color: white;
@@ -203,6 +208,40 @@ const CustomPopUp = styled(PopUp)`
   padding: 1rem;
 `;
 
+const SearchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+`;
+
+const FilterBox = styled.div`
+  position: relative;
+  > button {
+    width: max-content;
+  }
+`;
+
+const FilterDropDown = styled.div`
+  margin-top: 5px;
+  background-color: white;
+  position: absolute;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  display: flex;
+  flex-direction: column;
+
+  z-index: 1;
+`;
+
+const bookOptions = [
+  { label: "Pending", value: "pending" },
+  { label: "Accepted", value: "accepted" },
+  { label: "Denied", value: "denied" },
+];
+
+const CustomSelectInput = styled(SelectInput)`
+  width: 15rem;
+`;
+
 export default function DesignerConsultation() {
   const navigate = useNavigate();
   const [note, setNote] = useState(false);
@@ -210,10 +249,26 @@ export default function DesignerConsultation() {
   const aproveConsultation = aproveConsultationRequest();
   const denyConsultation = denyConsultationRequest();
   const [currentPage, setCurrentPage] = useState(1);
-  const [status, setStatus] = useState("pending");
-  const getDesignerConsultation = getDesignerConsultationRequest(currentPage, 10, status);
+  const [status, setStatus] = useState(bookOptions[0]);
+  const [search, setSearch] = useState("");
+  const [date, setDate] = useState([
+    {
+      startDate: null,
+      endDate: null,
+      key: "selection",
+    },
+  ]);
+  const getDesignerConsultation = getDesignerConsultationRequest(
+    currentPage,
+    10,
+    status.value,
+    date[0].startDate,
+    date[0].endDate,
+    search
+  );
   const [approveConfirm, setApproveConfirm] = useState();
   const [denyConfirm, setDenyConfirm] = useState();
+  const [isDropDown, setIsDropDown] = useState(false);
 
   const onApprove = (consultationId) => {
     const formData = new FormData();
@@ -248,22 +303,41 @@ export default function DesignerConsultation() {
   return (
     <>
       <Container>
-        <Header>
-          <HeaderButton $active={status == "pending"} onClick={() => setStatus("pending")}>
-            Pending
-          </HeaderButton>
-          <HeaderButton $active={status == "accepted"} onClick={() => setStatus("accepted")}>
-            Accepted
-          </HeaderButton>
-          <HeaderButton $active={status == "denied"} onClick={() => setStatus("denied")}>
-            Denied
-          </HeaderButton>
-        </Header>
-        {getDesignerConsultation.isLoading && (
-          <WaitingContainer>
-            <WaitingIcon />
-          </WaitingContainer>
-        )}
+        <SearchContainer>
+          <FilterBox>
+            <Button1 onClick={() => setIsDropDown((prev) => !prev)}>Filter Option</Button1>
+            {isDropDown && (
+              <FilterDropDown>
+                <div>
+                  <DateRangePicker
+                    onChange={(item) => setDate([item.selection])}
+                    showSelectionPreview={true}
+                    moveRangeOnFirstSelection={false}
+                    months={2}
+                    ranges={date}
+                    direction="horizontal"
+                  />
+                </div>
+                <Button1
+                  onClick={() => {
+                    setDate([
+                      {
+                        startDate: null,
+                        endDate: null,
+                        key: "selection",
+                      },
+                    ]);
+                  }}
+                >
+                  All Date
+                </Button1>
+              </FilterDropDown>
+            )}
+          </FilterBox>
+          <TextInput state={search} setState={setSearch} placeholder={"Search for name, address"} />
+          <CustomSelectInput state={status} setState={setStatus} options={bookOptions} />
+        </SearchContainer>
+
         <TableContent>
           <thead>
             <tr>
@@ -272,7 +346,7 @@ export default function DesignerConsultation() {
               <th>Address</th>
               <th>Order history</th>
               <th>Note</th>
-              {status == "pending" && <th>Action</th>}
+              {status.value == "pending" && <th>Action</th>}
             </tr>
           </thead>
 
@@ -295,7 +369,7 @@ export default function DesignerConsultation() {
                         </div>
                       </EmailColumn>
                     </td>
-                    <td>{formatDate(item.scheduled_datetime)} </td>
+                    <td>{formatDate(item.scheduled_datetime) + " " + item.time} </td>
                     <td>{item.address}</td>
                     <td>
                       <Button2 onClick={() => setIsShowOrderList(item.user_id)}>History</Button2>
@@ -303,7 +377,7 @@ export default function DesignerConsultation() {
                     <td>
                       <Button2 onClick={() => setNote(item.notes)}>Show note</Button2>
                     </td>
-                    {status == "pending" && (
+                    {status.value == "pending" && (
                       <td>
                         <ButtonContainer>
                           <Button2 onClick={() => setApproveConfirm(item.id)}>Approve</Button2>

@@ -2,13 +2,16 @@ import axiosAdmin from "@/shared/api/axiosAdmin";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 
-export const getDesignerConsultationRequest = (pageNumber, pageSize, status) => {
-  const request = async () => {
+export const getDesignerConsultationRequest = (pageNumber, pageSize, status, from, to, search) => {
+  const request = async (pageNumber, pageSize, status, from, to, search) => {
     const response = await axiosAdmin.get("ConsultationAdmin/designer_consultation_list", {
       params: {
         pageNumber,
         pageSize,
         status,
+        from: from ? `${from.getFullYear()}-${from.getMonth() + 1}-${from.getDate()}` : null,
+        to: to ? `${to.getFullYear()}-${to.getMonth() + 1}-${to.getDate()}` : null,
+        search,
       },
     });
 
@@ -16,9 +19,9 @@ export const getDesignerConsultationRequest = (pageNumber, pageSize, status) => 
   };
 
   return useQuery({
-    queryKey: ["designer-consultation", pageNumber, pageSize, status],
+    queryKey: ["designer-consultation", pageNumber, pageSize, status, from, to, search],
     queryFn: () => {
-      return request(pageNumber, pageSize, status);
+      return request(pageNumber, pageSize, status, from, to, search);
     },
   });
 };

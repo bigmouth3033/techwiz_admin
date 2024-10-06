@@ -15,6 +15,7 @@ import { DateRangePicker } from "react-date-range";
 import { DateRange } from "react-date-range";
 import { addDays } from "date-fns";
 import { DefinedRange } from "react-date-range";
+import Button1 from "@/shared/components/Button/Button1";
 
 const Container = styled.div`
   margin: 2rem;
@@ -148,6 +149,21 @@ const ImageContainer = styled.div`
   }}
 `;
 
+const DateFilter = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  ${(props) => {
+    if (props.$all) {
+      return css`
+        .all_date {
+          color: blue;
+        }
+      `;
+    }
+  }}
+`;
+
 export default function DesignerStories() {
   const [chosenUpdate, setChosenUpdate] = useState();
   const [currentPage, setCurrentPage] = useState(1);
@@ -158,8 +174,8 @@ export default function DesignerStories() {
 
   const [date, setDate] = useState([
     {
-      startDate: new Date(current.getFullYear(), current.getMonth(), 1),
-      endDate: new Date(current.getFullYear(), current.getMonth() + 1, 0),
+      startDate: null,
+      endDate: null,
       key: "selection",
     },
   ]);
@@ -220,15 +236,28 @@ export default function DesignerStories() {
           </Footer>
         </LeftContainer>
         <RightContainer>
-          <div>
+          <DateFilter $all={date[0].startDate != null && date[0].endDate != null ? false : true}>
             <DateRange
               editableDateInputs={true}
               onChange={(item) => setDate([item.selection])}
               moveRangeOnFirstSelection={false}
               ranges={date}
             />
-            <DefinedRange onChange={(item) => setDate([item.selection])} ranges={date} />
-          </div>
+            <Button1
+              className={"all_date"}
+              onClick={() => {
+                setDate([
+                  {
+                    startDate: null,
+                    endDate: null,
+                    key: "selection",
+                  },
+                ]);
+              }}
+            >
+              All Date
+            </Button1>
+          </DateFilter>
         </RightContainer>
       </Container>
 
