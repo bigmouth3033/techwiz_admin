@@ -22,6 +22,7 @@ import { BiImageAdd } from "react-icons/bi";
 import { AiOutlineClose } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import { adminRequest } from "@/shared/api/adminApi";
+import CropImagePopUp from "@/shared/components/PopUp/CropImagePopUp";
 
 const Container = styled.div`
   margin: 2rem;
@@ -318,6 +319,7 @@ export default function AddGallery() {
   const navigate = useNavigate();
   const inputRef = useRef();
   const admin = adminRequest();
+  const [isCrop, setIsCrop] = useState();
 
   const getProductById = getProductByIdRequest(state.product_list);
   const searchProduct = searchProductRequest(search);
@@ -394,7 +396,7 @@ export default function AddGallery() {
         return;
       }
 
-      dispatch({ type: ACTIONS.CHANGE_IMAGE, next: [...state.image, ...ev.target.files] });
+      setIsCrop(ev.target.files[0]);
       setImageError(null);
       ev.target.value = null;
     }
@@ -607,7 +609,7 @@ export default function AddGallery() {
                       <span>Add Image</span>
                     </AddImageButton>
                   )}
-                  <input ref={inputRef} onChange={handleImageChange} type="file" multiple />
+                  <input ref={inputRef} onChange={handleImageChange} type="file" />
                 </ImageContainer>
 
                 {errors.image && <h5 className="error">{errors.image}</h5>}
@@ -700,6 +702,16 @@ export default function AddGallery() {
         </FormContainer>
       </Container>
       {imageError && <ErrorPopUp message={imageError} action={() => setImageError("")} />}
+      {isCrop && (
+        <CropImagePopUp
+          action={() => setIsCrop()}
+          onSuccess={(image) => {
+            dispatch({ type: ACTIONS.CHANGE_IMAGE, next: [...state.image, image] });
+          }}
+          image={isCrop}
+          aspect={16 / 9}
+        />
+      )}
     </>
   );
 }

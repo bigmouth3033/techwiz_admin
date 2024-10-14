@@ -10,6 +10,7 @@ import { adminRequest } from "@/shared/api/adminApi";
 import { createNewStoryRequest } from "../api/designerStoryApi";
 import Button1 from "@/shared/components/Button/Button1";
 import ErrorPopUp from "@/shared/components/PopUp/ErrorPopUp";
+import CropImagePopUp from "@/shared/components/PopUp/CropImagePopUp";
 
 const CustomPopUp = styled(PopUp)`
   padding: 0;
@@ -150,6 +151,7 @@ const ButtonContainer = styled.div`
 `;
 
 export default function NewStoryPopUp({ action }) {
+  const [cropImage, setCropImage] = useState();
   const admin = adminRequest();
   const [images, setImages] = useState([]);
   const [content, setContent] = useState("");

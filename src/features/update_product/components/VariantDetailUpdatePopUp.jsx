@@ -60,14 +60,15 @@ const regex = /^-?\d+(\.\d+)?$/;
 
 const moneyRegex = /^(?=.*\d)\d*(?:\.\d*)?$/;
 
-export default function VariantDetailPopUp({ action, state, setState }) {
-  const [salePrice, setSalePrice] = useState(state.realPrice);
-  const [comparePrice, setComparePrice] = useState(state.fakePrice);
+export default function VariantDetailUpdatePopUp({ action, state, setState }) {
+  const [salePrice, setSalePrice] = useState(state.price);
+  const [comparePrice, setComparePrice] = useState(state.saleprice);
 
   return (
     <StyledPopUp action={() => {}}>
       <Header>
-        <span>Edit</span> {state.variant.join("/")}
+        <span>Edit</span>{" "}
+        {state.variantattributes.map((attribute) => attribute.attributevalue).join(" / ")}
       </Header>
       <hr />
       <Content>
@@ -104,8 +105,8 @@ export default function VariantDetailPopUp({ action, state, setState }) {
               alert("Fake price cant be smaller than real price");
               return;
             } else {
-              state.realPrice = salePrice ? salePrice : 0;
-              state.fakePrice = comparePrice ? comparePrice : 0;
+              state.price = salePrice ? salePrice : 0;
+              state.saleprice = comparePrice ? comparePrice : 0;
               setState();
               action();
             }

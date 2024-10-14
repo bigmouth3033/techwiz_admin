@@ -1,4 +1,5 @@
 export const colourOptions = [
+  { value: "white", label: "White", color: "#e9ecef" },
   { value: "black", label: "Black", color: "#000000" },
   { value: "ocean", label: "Ocean", color: "#00B8D9" },
   { value: "blue", label: "Blue", color: "#0052CC" },

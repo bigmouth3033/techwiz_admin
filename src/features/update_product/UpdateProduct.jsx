@@ -4,30 +4,29 @@ import SelectInput from "@/shared/components/Input/SelectInput";
 import TextInput from "@/shared/components/Input/TextInput";
 import InputCheckBox from "@/shared/components/Input/InputCheckBox";
 import Button1 from "@/shared/components/Button/Button1";
-import TextEditor from "./components/TextEditor/TextEditor";
+import TextEditor from "../product/components/TextEditor/TextEditor";
 import { BiImageAdd } from "react-icons/bi";
 import ErrorPopUp from "@/shared/components/PopUp/ErrorPopUp";
 import { AiOutlineClose } from "react-icons/ai";
 import CreatableSelect from "react-select/creatable";
-import useCreateProductReducer from "./hooks/useCreateProduct";
+import useUpdateProduct from "./hooks/useUpdateProduct";
 import { useEffect } from "react";
-import cartesian from "./utils/cartesian";
-import optionsFunction from "./data/optionsFunction";
-import optionsBrand from "./data/optionsBrand";
-import variantOptions from "./data/variantOptions";
-import VariantDetailPopUp from "./components/PopUp/VariantDetailPopUp";
-import { FaPlus } from "react-icons/fa";
-import { FaTrash } from "react-icons/fa";
+import optionsFunction from "../product/data/optionsFunction";
+import variantOptions from "../product/data/variantOptions";
 import Select from "react-select";
 import AlertPopUp from "@/shared/components/PopUp/AlertPopUp";
-import { createNewProductRequest } from "./api/createProductApi";
-import AllVariantPopUp from "./components/PopUp/AllVariantPopUp";
 import WaitingPopUp from "@/shared/components/PopUp/WaitingPopUp";
-import ColorPopUp from "./components/PopUp/ColorPopUp";
-import { IoIosColorPalette } from "react-icons/io";
-import chroma from "chroma-js";
-import { Link } from "react-router-dom";
+import optionsBrand from "@/features/product/data/optionsBrand";
 import CropImagePopUp from "@/shared/components/PopUp/CropImagePopUp";
+import { getProductByIdRequest } from "./api/updateProductApi";
+import { useSearchParams } from "react-router-dom";
+import notfound from "@/shared/assets/images/404.png";
+import getFirebaseImageUrl from "@/shared/utils/getFireBaseImage";
+import VariantDetailUpdatePopUp from "./components/VariantDetailUpdatePopUp";
+import brandOptions from "@/features/product/data/optionsBrand";
+import AllVariantUpdatePopUp from "./components/AllVariantUpdatePopUp";
+import { updateProductRequest } from "./api/updateProductApi";
+import { adminRequest } from "@/shared/api/adminApi";
 
 const Container = styled.div`
   margin: 2rem;
@@ -389,6 +388,12 @@ const ColorButton = styled.div`
   }
 `;
 
+const NotFound = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
 const PriceContainer = styled.span`
   > span:nth-of-type(1) {
     font-weight: 700;
@@ -417,13 +422,16 @@ const createOption = (label) => ({
   value: label,
 });
 
-export default function Product() {
+export default function UpdateProduct() {
+  const admin = adminRequest();
+  const updateProduct = updateProductRequest();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const getProductById = getProductByIdRequest(searchParams.get("id"));
   const [imageCrop, setImageCrop] = useState();
-  const createNewProduct = createNewProductRequest();
   const [errors, setErrors] = useState({});
   const [images, setImages] = useState([]);
   const [imageError, setImageError] = useState();
-  const [state, dispatch, ACTIONS] = useCreateProductReducer();
+  const [state, dispatch, ACTIONS] = useUpdateProduct();
   const [variantDetailPopUp, setVariantDetailPopUp] = useState(false);
   const [chosenVariantDetail, setChosenVariantDetail] = useState(null);
   const [onEditAll, setOnEditAll] = useState();
@@ -433,54 +441,6 @@ export default function Product() {
   const [colorPopUp, setColorPopUp] = useState(false);
   const [inputValue, setInputValue] = useState(["", "", "", "", ""]);
   const [value, setValue] = useState([[], [], [], [], []]);
-
-  const handleKeyDown = (event, index, item) => {
-    if (!inputValue[index]) return;
-    switch (event.key) {
-      case "Enter":
-      case "Tab":
-        if (item.value == "Color") {
-          try {
-            dispatch({
-              type: ACTIONS.CHANGE_COLOR,
-              next: [
-                ...state.colors,
-                {
-                  color: createOption(inputValue[index]).value,
-                  hex: hexTo32BitARGB(chroma(createOption(inputValue[index]).value).hex()),
-                },
-              ],
-            });
-          } catch {
-            return;
-          }
-        }
-        setValue((prev) => {
-          const newValue = [...prev];
-          const currentValue = Array.isArray(prev[index]) ? prev[index] : [];
-          newValue[index] = [...currentValue, createOption(inputValue[index])];
-          return newValue;
-        });
-        setInputValue((prev) => {
-          const newInputValue = [...prev];
-          newInputValue[index] = "";
-          return newInputValue;
-        });
-        event.preventDefault();
-        break;
-      default:
-        break;
-    }
-  };
-
-  const onAddMoreVariant = () => {
-    state.variants.push([]);
-
-    dispatch({
-      type: ACTIONS.CHANGE_VARIANTS,
-      next: [...state.variants],
-    });
-  };
 
   const handleImageChange = (ev) => {
     const allowedFileTypes = ["image/jpeg", "image/png", "image/gif", "image/jpg"];
@@ -513,34 +473,7 @@ export default function Product() {
     inputRef.current.click();
   };
 
-  useEffect(() => {
-    let combinationArr = [];
-
-    for (let i = 0; i < value.length; i++) {
-      combinationArr.push(value[i].map((item) => item.value));
-    }
-
-    combinationArr = combinationArr.filter((item) => item.length != 0);
-
-    if (combinationArr.length != 0) {
-      const cartesianResult = cartesian(...combinationArr);
-
-      const newCombination = [];
-
-      for (let item of cartesianResult) {
-        newCombination.push({
-          variant: Array.isArray(item) ? item : [item],
-          realPrice: 0,
-          fakePrice: 0,
-          selected: false,
-        });
-      }
-
-      dispatch({ type: ACTIONS.CHANGE_VARIANT_DETAIL, next: newCombination });
-    }
-  }, [value]);
-
-  const onCreateProduct = () => {
+  const onUpdateProduct = () => {
     let isOk = true;
 
     if (!state.productName) {
@@ -600,24 +533,27 @@ export default function Product() {
 
     if (isOk) {
       const formData = new FormData();
+      formData.append("id", getProductById.data.data.id);
       formData.append("ProductName", state.productName);
       formData.append("Brand", state.brand.value);
       formData.append("Description", state.description);
       formData.append("Status", state.active);
       formData.append("RoomFuncion", state.roomFuncion.value);
 
-      if (state.colors.length != 0) {
-        state.colors.forEach((color) => formData.append("colorJson", JSON.stringify(color)));
-      }
+      state.images.forEach(
+        (image) => typeof image == "object" && formData.append("UploadImages", image)
+      );
 
-      state.images.forEach((item) => formData.append("Images", item));
-      state.variants.forEach((item) => formData.append("Variants", item.value));
-      state.variant_detail.forEach((item) => formData.append("VariantsJSON", JSON.stringify(item)));
+      state.images.forEach(
+        (image) => typeof image != "object" && formData.append("OldImages", image)
+      );
 
-      createNewProduct.mutate(formData, {
+      state.variant_detail.forEach((item) => formData.append("VariantJson", JSON.stringify(item)));
+
+      updateProduct.mutate(formData, {
         onSuccess: (response) => {
           if (response.status == 200) {
-            window.location.reload();
+            getProductById.refetch();
           }
         },
       });
@@ -641,7 +577,77 @@ export default function Product() {
     setCheckedAll(isOk);
   }, [state.variant_detail]);
 
-  if (createNewProduct.isPending) {
+  useEffect(() => {
+    if (
+      getProductById.isSuccess &&
+      getProductById.data.status == 200 &&
+      getProductById.data.data != null
+    ) {
+      const data = getProductById.data.data;
+
+      dispatch({ type: ACTIONS.CHANGE_NAME, next: data.productname });
+      dispatch({ type: ACTIONS.CHANGE_DESCRIPTION, next: data.description });
+      dispatch({
+        type: ACTIONS.CHANGE_IMAGES,
+        next: [...data.images.map((image) => image.imagename)],
+      });
+      dispatch({
+        type: ACTIONS.CHANGE_BRAND,
+        next: brandOptions.find((brand) => brand.value == data.brand),
+      });
+      dispatch({
+        type: ACTIONS.CHANGE_FUNCTION,
+        next: optionsFunction.find((func) => func.value == data.functionality_id),
+      });
+
+      dispatch({
+        type: ACTIONS.CHANGE_VARIANTS,
+        next: data.variants[0].variantattributes.map((type) => {
+          return { label: type.attributetype, value: type.attributetype };
+        }),
+      });
+
+      const maxType = data.variants[0].variantattributes.length;
+
+      const newVariantValue = [[], [], [], [], []];
+
+      for (let i = 0; i < maxType; i++) {
+        for (let variant of data.variants) {
+          if (
+            !newVariantValue[i].find(
+              (item) => item.value == variant.variantattributes[i].attributevalue
+            )
+          ) {
+            newVariantValue[i].push({
+              label: variant.variantattributes[i].attributevalue,
+              value: variant.variantattributes[i].attributevalue,
+            });
+          }
+        }
+      }
+      setValue(newVariantValue);
+
+      dispatch({
+        type: ACTIONS.CHANGE_VARIANT_DETAIL,
+        next: data.variants.map((item) => {
+          return { ...item, selected: false };
+        }),
+      });
+      dispatch({ type: ACTIONS.CHANGE_ACTIVE, next: data.status });
+    }
+  }, [getProductById.status]);
+
+  if (getProductById.isSuccess && getProductById.data.data == null) {
+    return (
+      <Container>
+        <NotFound>
+          <img src={notfound} />
+        </NotFound>
+      </Container>
+    );
+  }
+
+  if (updateProduct.isPending) {
     return <WaitingPopUp />;
   }
 
@@ -706,7 +712,13 @@ export default function Product() {
                             }}
                           />
                         </ImageLayout>
-                        <img src={URL.createObjectURL(item)} />
+                        <img
+                          src={
+                            typeof item == "object"
+                              ? URL.createObjectURL(item)
+                              : getFirebaseImageUrl(item)
+                          }
+                        />
                       </ImageItem>
                     );
                   })}
@@ -726,103 +738,22 @@ export default function Product() {
             </ImageContainer>
             {errors.image && <h5 className="error">{errors.image}</h5>}
             <VariantContainer>
-              <h5>
-                Variants{" "}
-                <Link to={"https://www.w3.org/TR/css-color-4/#named-colors"}>
-                  (Color variant only accept certain name)
-                </Link>
-              </h5>
+              <h5>Variants </h5>
               {state.variants.map((item, index) => {
                 return (
                   <VariantDetail key={index}>
-                    <Creatable
-                      value={item}
-                      onChange={(options) => {
-                        state.variants[index] = options;
-                        dispatch({
-                          type: ACTIONS.CHANGE_VARIANTS,
-                          next: state.variants,
-                        });
-                      }}
-                      options={variantOptions}
-                      isSearchable
-                    />
-                    <FaTrash
-                      className="trash"
-                      onClick={() => {
-                        if (item.value == "Color") {
-                          dispatch({ type: ACTIONS.CHANGE_COLOR, next: [] });
-                        }
-                        if (state.variants.length == 1) {
-                          setIsAlert("You need at least 1 variant ");
-                          return;
-                        }
-                        state.variants = state.variants.filter((_, number) => index != number);
-                        dispatch({
-                          type: ACTIONS.CHANGE_VARIANTS,
-                          next: state.variants,
-                        });
-                        setValue((prev) => {
-                          prev[index] = [];
-                          const newValue = [];
-                          for (let item of prev) {
-                            if (!item || item.length == 0) {
-                              continue;
-                            }
-                            newValue.push(item);
-                          }
-                          newValue.push([]);
-
-                          return newValue;
-                        });
-                      }}
-                    />
+                    <Creatable value={item} isSearchable />
                     <CreatableSelect
                       className="createselect"
                       components={components}
                       inputValue={inputValue[index]}
-                      isClearable
                       isMulti
                       menuIsOpen={false}
-                      onChange={(newValue) => {
-                        console.log(newValue);
-                        if (item.value == "Color") {
-                          const arr = newValue.map((newItem) => newItem.value);
-
-                          dispatch({
-                            type: ACTIONS.CHANGE_COLOR,
-                            next: [
-                              ...state.colors.filter((colorObj) => arr.includes(colorObj.color)),
-                            ],
-                          });
-                        }
-                        const newestValue = [...value];
-                        newestValue[index] = newValue;
-                        setValue(newestValue);
-                      }}
-                      onInputChange={(newValue) => {
-                        const newestValue = [...inputValue];
-                        newestValue[index] = newValue;
-                        setInputValue(newestValue);
-                      }}
-                      onKeyDown={(ev) => handleKeyDown(ev, index, item)}
-                      placeholder="Type something and press enter..."
                       value={value[index]}
                     />
-                    {item.value == "Color" && (
-                      <ColorButton onClick={() => setColorPopUp(true)}>
-                        <IoIosColorPalette />
-                      </ColorButton>
-                    )}
                   </VariantDetail>
                 );
               })}
-              {state.variants.length < 5 && (
-                <button onClick={onAddMoreVariant}>
-                  <FaPlus />
-                  Add more variant
-                </button>
-              )}
             </VariantContainer>
             {state.variant_detail.length != 0 && (
               <VariantUpdateButton>
@@ -878,14 +809,16 @@ export default function Product() {
                       }}
                     >
                       <span>
-                        {item.variant.length != 1 ? item.variant.join(" / ") : item.variant[0]}
+                        {item.variantattributes
+                          .map((attribute) => attribute.attributevalue)
+                          .join(" / ")}
                       </span>
                       <PriceContainer>
-                        <span>${item.realPrice}</span>
-                        {item.fakePrice != 0 && (
+                        <span>${item.price}</span>
+                        {item.saleprice != 0 && (
                           <>
                             {" / "}
-                            <span>${item.fakePrice}</span>
+                            <span>${item.saleprice}</span>
                           </>
                         )}
                       </PriceContainer>
@@ -898,32 +831,34 @@ export default function Product() {
             {errors.type && <h5 className="error">{errors.type}</h5>}
           </LeftContainer>
           <RightContainer>
-            <ShowInfo>
-              <ContentItem>
-                <h5>Status</h5>
-                <hr />
-                <ActionContainer>
-                  <InputCheckBox
-                    checked={state.active}
-                    onChange={() => {
-                      dispatch({ type: ACTIONS.CHANGE_ACTIVE, next: !state.active });
-                    }}
-                  />
-                  Product Active
-                </ActionContainer>
-                <hr />
-                <ButtonContainer>
-                  <ConfirmButton onClick={() => onCreateProduct()}>Save</ConfirmButton>
-                  <DiscardButton onClick={() => window.location.reload()}>Discard</DiscardButton>
-                </ButtonContainer>
-              </ContentItem>
-            </ShowInfo>
+            {admin.data.data.role == "admin" && (
+              <ShowInfo>
+                <ContentItem>
+                  <h5>Status</h5>
+                  <hr />
+                  <ActionContainer>
+                    <InputCheckBox
+                      checked={state.active}
+                      onChange={() => {
+                        dispatch({ type: ACTIONS.CHANGE_ACTIVE, next: !state.active });
+                      }}
+                    />
+                    Product Active
+                  </ActionContainer>
+                  <hr />
+                  <ButtonContainer>
+                    <ConfirmButton onClick={() => onUpdateProduct()}>Save</ConfirmButton>
+                    <DiscardButton onClick={() => window.location.reload()}>Discard</DiscardButton>
+                  </ButtonContainer>
+                </ContentItem>
+              </ShowInfo>
+            )}
           </RightContainer>
         </FormContainer>
       </Container>
       {imageError && <ErrorPopUp message={imageError} action={() => setImageError("")} />}
       {variantDetailPopUp && (
-        <VariantDetailPopUp
+        <VariantDetailUpdatePopUp
           state={chosenVariantDetail}
           action={() => setVariantDetailPopUp(false)}
           setState={() => {
@@ -932,7 +867,7 @@ export default function Product() {
         />
       )}
       {onEditAll && (
-        <AllVariantPopUp
+        <AllVariantUpdatePopUp
           setState={() => {
             dispatch({ type: ACTIONS.CHANGE_VARIANT_DETAIL, next: state.variant_detail });
           }}
@@ -941,16 +876,6 @@ export default function Product() {
         />
       )}
       {isAlert && <AlertPopUp message={isAlert} action={() => setIsAlert("")} />}
-
-      {colorPopUp && (
-        <ColorPopUp
-          action={() => setColorPopUp()}
-          state={state.colors}
-          setState={() => {
-            dispatch({ type: ACTIONS.CHANGE_COLOR, next: state.colors });
-          }}
-        />
-      )}
 
       {imageCrop && (
         <CropImagePopUp
@@ -964,23 +889,4 @@ export default function Product() {
       )}
     </>
   );
-}
-
-function hexTo32BitARGB(hex) {
-  const color = chroma(hex);
-
-  // Extract RGB components (as integers)
-  const [r, g, b] = color.rgb();
-
-  // Alpha (Opacity) - assuming fully opaque (255)
-  const a = 255; // or color.alpha() * 255 for actual alpha value
-
-  // Convert to 32-bit unsigned integer
-  const argb = ((a << 24) | (r << 16) | (g << 8) | b) >>> 0; // Ensure it's unsigned
-
-  // Convert to hexadecimal format with ARGB structure
-  const argbHex = argb.toString(16).padStart(8, "0"); // Pad with zeros if necessary
-
-  // Add the '0x' prefix to denote hexadecimal format
-  return `0x${argbHex}`;
 }

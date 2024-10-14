@@ -51,6 +51,20 @@ export const denyConsultationRequest = () => {
   });
 };
 
+export const finishConsultationRequest = () => {
+  const request = async (payload) => {
+    const response = await axiosAdmin.put(
+      "ConsultationAdmin/designer_finished_consultation",
+      payload
+    );
+    return response.data;
+  };
+
+  return useMutation({
+    mutationFn: request,
+  });
+};
+
 export const getCustomerOrderListRequest = (pageNumber, pageSize, userId) => {
   const request = async () => {
     const response = await axiosAdmin.get("OrderAdmin/get_user_order_history", {

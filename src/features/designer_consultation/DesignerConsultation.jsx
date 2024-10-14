@@ -19,6 +19,8 @@ import TextInput from "@/shared/components/Input/TextInput";
 import SelectInput from "@/shared/components/Input/SelectInput";
 import { DateRangePicker } from "react-date-range";
 import { addDays } from "date-fns";
+import { finishConsultationRequest } from "./api/designerConsultationApi";
+import { MdOutlineStar } from "react-icons/md";
 
 const Container = styled.div`
   background-color: white;
@@ -206,6 +208,10 @@ const XButtonContainer = styled.div`
 const CustomPopUp = styled(PopUp)`
   margin: 0;
   padding: 1rem;
+  width: 50rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
 const SearchContainer = styled.div`
@@ -233,9 +239,11 @@ const FilterDropDown = styled.div`
 `;
 
 const bookOptions = [
+  { label: "All", value: "all" },
   { label: "Pending", value: "pending" },
   { label: "Accepted", value: "accepted" },
   { label: "Denied", value: "denied" },
+  { label: "Finished", value: "finished" },
 ];
 
 const CustomSelectInput = styled(SelectInput)`
@@ -248,9 +256,12 @@ export default function DesignerConsultation() {
   const [isShowOrderList, setIsShowOrderList] = useState();
   const aproveConsultation = aproveConsultationRequest();
   const denyConsultation = denyConsultationRequest();
+  const finishConsultation = finishConsultationRequest();
   const [currentPage, setCurrentPage] = useState(1);
   const [status, setStatus] = useState(bookOptions[0]);
   const [search, setSearch] = useState("");
+  const [isReviewPopUp, setIsReviewPopUp] = useState();
+
   const [date, setDate] = useState([
     {
       startDate: null,
@@ -258,6 +269,7 @@ export default function DesignerConsultation() {
       key: "selection",
     },
   ]);
+
   const getDesignerConsultation = getDesignerConsultationRequest(
     currentPage,
     10,
@@ -266,8 +278,11 @@ export default function DesignerConsultation() {
     date[0].endDate,
     search
   );
+
   const [approveConfirm, setApproveConfirm] = useState();
   const [denyConfirm, setDenyConfirm] = useState();
+  const [finishConfirm, setFinishConfirm] = useState();
+
   const [isDropDown, setIsDropDown] = useState(false);
 
   const onApprove = (consultationId) => {
@@ -294,6 +309,21 @@ export default function DesignerConsultation() {
       onSuccess: (response) => {
         if (response.status == 200) {
           setDenyConfirm();
+          getDesignerConsultation.refetch();
+        }
+      },
+    });
+  };
+
+  const onFinish = (consultationId) => {
+    const formData = new FormData();
+
+    formData.append("consultationId", consultationId);
+
+    finishConsultation.mutate(formData, {
+      onSuccess: (response) => {
+        if (response.status == 200) {
+          setFinishConfirm();
           getDesignerConsultation.refetch();
         }
       },
@@ -344,9 +374,12 @@ export default function DesignerConsultation() {
               <th>User</th>
               <th>Schedule</th>
               <th>Address</th>
-              <th>Order history</th>
               <th>Note</th>
+              <th>Review</th>
+              <th>Status</th>
+              {status.value == "all" && <th>Action</th>}
               {status.value == "pending" && <th>Action</th>}
+              {status.value == "accepted" && <th>Action</th>}
             </tr>
           </thead>
 
@@ -372,16 +405,28 @@ export default function DesignerConsultation() {
                     <td>{formatDate(item.scheduled_datetime) + " " + item.time} </td>
                     <td>{item.address}</td>
                     <td>
-                      <Button2 onClick={() => setIsShowOrderList(item.user_id)}>History</Button2>
-                    </td>
-                    <td>
                       <Button2 onClick={() => setNote(item.notes)}>Show note</Button2>
                     </td>
-                    {status.value == "pending" && (
+                    <td>
+                      {item.review && (
+                        <Button2 onClick={() => setIsReviewPopUp(item.review)}>Review</Button2>
+                      )}
+                    </td>
+                    <td>{item.status[0].toUpperCase() + item.status.slice(1)}</td>
+                    {(status.value == "pending" ||
+                      (status.value == "all" && item.status == "pending")) && (
                       <td>
                         <ButtonContainer>
                           <Button2 onClick={() => setApproveConfirm(item.id)}>Approve</Button2>
                           <Button2 onClick={() => setDenyConfirm(item.id)}>Deny</Button2>
+                        </ButtonContainer>
+                      </td>
+                    )}
+                    {(status.value == "accepted" ||
+                      (status.value == "all" && item.status == "accepted")) && (
+                      <td>
+                        <ButtonContainer>
+                          <Button2 onClick={() => setFinishConfirm(item.id)}>Finished</Button2>
                         </ButtonContainer>
                       </td>
                     )}
@@ -414,6 +459,13 @@ export default function DesignerConsultation() {
           message={"confirm?"}
         />
       )}
+      {finishConfirm && (
+        <ConfirmPopUp
+          cancel={() => setFinishConfirm()}
+          confirm={() => onFinish(finishConfirm)}
+          message={"confirm?"}
+        />
+      )}
       {note && (
         <CustomPopUp action={() => {}}>
           <XButtonContainer>
@@ -422,8 +474,40 @@ export default function DesignerConsultation() {
           <Note>{note}</Note>
         </CustomPopUp>
       )}
-      {isShowOrderList && <OrderPopUp action={() => setIsShowOrderList()} id={isShowOrderList} />}
+      {isReviewPopUp && <ReviewPopUp action={() => setIsReviewPopUp()} review={isReviewPopUp} />}
     </>
+  );
+}
+
+const StarContainer = styled.div`
+  display: flex;
+  color: yellow;
+  font-size: 50px;
+`;
+
+const TextArea = styled.textarea`
+  padding: 8px;
+  border-radius: 3px;
+  width: 100%;
+  height: 15rem;
+  resize: none;
+  margin: 0;
+
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  outline: none;
+  transition: all 0.3s;
+`;
+
+function ReviewPopUp({ review, action }) {
+  return (
+    <CustomPopUp action={action}>
+      <StarContainer>
+        {Array.from({ length: review.score }, (_, index) => (
+          <MdOutlineStar />
+        ))}
+      </StarContainer>
+      <TextArea>{review.comment}</TextArea>
+    </CustomPopUp>
   );
 }
 

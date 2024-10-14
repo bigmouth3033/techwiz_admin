@@ -10,6 +10,7 @@ import { ImBlog } from "react-icons/im";
 import { FaImages } from "react-icons/fa";
 import { FaBookOpenReader } from "react-icons/fa6";
 import { FaPhoneAlt } from "react-icons/fa";
+import { IoIosNotifications } from "react-icons/io";
 
 const sidebar_content = [
   {
@@ -163,6 +164,20 @@ const sidebar_content = [
     icon: <TbCategory2 />,
     role: "designer",
     link: "/product_list",
+  },
+  {
+    name: "Notification",
+    type: "button",
+    icon: <IoIosNotifications />,
+    role: "admin",
+    link: "/admin_notification",
+  },
+  {
+    name: "Notification",
+    type: "button",
+    icon: <IoIosNotifications />,
+    role: "designer",
+    link: "/designer_notification",
   },
 ];
 

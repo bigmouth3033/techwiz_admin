@@ -20,6 +20,7 @@ import { approveDesignerRequest } from "../pending_approved_designer/api/pending
 import { denyDesignerRequest } from "../pending_approved_designer/api/pendingApprovedApi";
 import { changeDesignerStatusRequest } from "../designer_list/api/designerListApi";
 import WaitingPopUp from "@/shared/components/PopUp/WaitingPopUp";
+import InputCheckBox from "@/shared/components/Input/InputCheckBox";
 
 const Container = styled.div`
   background-color: white;
@@ -192,6 +193,24 @@ const NotFound = styled.div`
   align-items: center;
 `;
 
+const DateOfWorkContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 0 2rem;
+
+  & p {
+    margin: 0;
+    padding: 0;
+  }
+
+  > div {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+`;
+
 export default function DesignerDetail() {
   const changeDesignerStatus = changeDesignerStatusRequest();
   const approveDesigner = approveDesignerRequest();
@@ -206,7 +225,15 @@ export default function DesignerDetail() {
   const [specialize, setSpecialize] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-
+  const [dow, setDow] = useState({
+    Mon: false,
+    Tue: false,
+    Wed: false,
+    Thu: false,
+    Fri: false,
+    Sat: false,
+    Sun: false,
+  });
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [avatar, setAvatar] = useState();
@@ -236,6 +263,14 @@ export default function DesignerDetail() {
       const images = data.certificate.split("; ").filter((item) => item.length != 0);
 
       setCertificateImages(images);
+
+      const dowQuery = data.daywork.split("-");
+
+      for (let item of dowQuery) {
+        setDow((prev) => {
+          return { ...prev, [item]: true };
+        });
+      }
     }
   }, [getApprovedDesignerDetail.status]);
 
@@ -299,6 +334,15 @@ export default function DesignerDetail() {
                 }}
               >
                 Certificate
+              </HeaderButton>
+              <HeaderButton
+                $active={header == "dow"}
+                onClick={(ev) => {
+                  ev.preventDefault();
+                  setHeader("dow");
+                }}
+              >
+                Day of work
               </HeaderButton>
             </Header>
             {header == "info" && (
@@ -377,6 +421,39 @@ export default function DesignerDetail() {
                   </Images>
                 )}
               </ImageContainer>
+            )}
+
+            {header == "dow" && (
+              <DateOfWorkContainer>
+                <div>
+                  <InputCheckBox readOnly={true} checked={dow.Mon} />
+                  <p>Monday</p>
+                </div>
+                <div>
+                  <InputCheckBox readOnly={true} checked={dow.Tue} />
+                  <p>Tuesday</p>
+                </div>
+                <div>
+                  <InputCheckBox readOnly={true} checked={dow.Wed} />
+                  <p>Wednesday</p>
+                </div>
+                <div>
+                  <InputCheckBox readOnly={true} checked={dow.Thu} />
+                  <p>Thursday</p>
+                </div>
+                <div>
+                  <InputCheckBox readOnly={true} checked={dow.Fri} />
+                  <p>Friday</p>
+                </div>
+                <div>
+                  <InputCheckBox readOnly={true} checked={dow.Sat} />
+                  <p>Saturday</p>
+                </div>
+                <div>
+                  <InputCheckBox readOnly={true} checked={dow.Sun} />
+                  <p>Sunday</p>
+                </div>
+              </DateOfWorkContainer>
             )}
 
             <ButtonContainer>

@@ -26,6 +26,7 @@ import { adminRequest } from "@/shared/api/adminApi";
 import notfound from "@/shared/assets/images/404.png";
 import { changeGalleryStatusRequest } from "./api/updateGalleryApi";
 import { updateGalleryRequest } from "./api/updateGalleryApi";
+import CropImagePopUp from "@/shared/components/PopUp/CropImagePopUp";
 
 const Container = styled.div`
   margin: 2rem;
@@ -347,6 +348,7 @@ const NotFound = styled.div`
 `;
 
 export default function AddGallery() {
+  const [cropImage, setCropImage] = useState();
   const updateGallery = updateGalleryRequest();
   const admin = adminRequest();
   let [searchParams, setSearchParams] = useSearchParams();
@@ -484,7 +486,7 @@ export default function AddGallery() {
         return;
       }
 
-      dispatch({ type: ACTIONS.CHANGE_IMAGE, next: [...state.image, ...ev.target.files] });
+      setCropImage(ev.target.files[0]);
       setImageError(null);
       ev.target.value = null;
     }
@@ -741,7 +743,7 @@ export default function AddGallery() {
                       <span>Add Image</span>
                     </AddImageButton>
                   )}
-                  <input ref={inputRef} onChange={handleImageChange} type="file" multiple />
+                  <input ref={inputRef} onChange={handleImageChange} type="file" />
                 </ImageContainer>
 
                 {errors.image && <h5 className="error">{errors.image}</h5>}
@@ -855,6 +857,16 @@ export default function AddGallery() {
         </FormContainer>
       </Container>
       {imageError && <ErrorPopUp message={imageError} action={() => setImageError("")} />}
+      {cropImage && (
+        <CropImagePopUp
+          action={() => setCropImage()}
+          onSuccess={(image) => {
+            dispatch({ type: ACTIONS.CHANGE_IMAGE, next: [...state.image, image] });
+          }}
+          image={cropImage}
+          aspect={16 / 9}
+        />
+      )}
     </>
   );
 }

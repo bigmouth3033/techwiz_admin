@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import ErrorPopUp from "@/shared/components/PopUp/ErrorPopUp";
 import Button1 from "@/shared/components/Button/Button1";
 import background from "./assets/images/background.jpg";
+import { adminRequest } from "@/shared/api/adminApi";
 
 const Container = styled.div`
   height: 100vh;
@@ -80,6 +81,7 @@ const HeaderContainer = styled.div`
 const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Login() {
+  const admin = adminRequest();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

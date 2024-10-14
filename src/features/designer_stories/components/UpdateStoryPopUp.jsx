@@ -12,6 +12,7 @@ import Button1 from "@/shared/components/Button/Button1";
 import ErrorPopUp from "@/shared/components/PopUp/ErrorPopUp";
 import getFirebaseImageUrl from "@/shared/utils/getFireBaseImage";
 import { updateDesignerStoryRequest } from "../api/designerStoryApi";
+import CropImagePopUp from "@/shared/components/PopUp/CropImagePopUp";
 
 const CustomPopUp = styled(PopUp)`
   padding: 0;
@@ -155,6 +156,7 @@ const ButtonContainer = styled.div`
 `;
 
 export default function UpdateStoryPopUp({ action, story }) {
+  const [cropImage, setCropImage] = useState();
   const updateDesignerStory = updateDesignerStoryRequest();
   const admin = adminRequest();
   const [images, setImages] = useState(
@@ -188,7 +190,7 @@ export default function UpdateStoryPopUp({ action, story }) {
         return;
       }
 
-      setImages((prev) => [...prev, ...ev.target.files]);
+      setCropImage(ev.target.files[0]);
       setImageError(null);
       ev.target.files = [];
     }
@@ -280,6 +282,16 @@ export default function UpdateStoryPopUp({ action, story }) {
       </CustomPopUp>
       {imageError && <ErrorPopUp message={imageError} action={() => setImageError("")} />}
       {error && <ErrorPopUp message={error} action={() => setError("")} />}
+      {cropImage && (
+        <CropImagePopUp
+          action={() => setCropImage()}
+          onSuccess={(image) => {
+            setImages((prev) => [...prev, image]);
+          }}
+          image={cropImage}
+          aspect={1 / 1}
+        />
+      )}
     </>
   );
 }

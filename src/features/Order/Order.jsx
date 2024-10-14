@@ -241,7 +241,6 @@ export default function Order() {
                 <Radio value="packaged">Packaged</Radio>
                 <Radio value="delivery">Delivery</Radio>
                 <Radio value="completed">Completed</Radio>
-                <Radio value="finished">Finished</Radio>
               </Radio.Group>
             </Form.Item>
           </Form>

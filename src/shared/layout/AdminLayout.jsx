@@ -13,6 +13,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Bounce } from "react-toastify";
 import { useRef } from "react";
+import Cookies from "js-cookie";
 
 const Container = styled.div`
   display: grid;
@@ -123,6 +124,16 @@ export default function AdminLayout() {
   if (admin.isSuccess && admin.data.status == 404) {
     navigate("/login");
     return;
+  }
+
+  if (
+    admin.isSuccess &&
+    admin.data.status == 200 &&
+    admin.data.data.role == "designer" &&
+    admin.data.data.interiordesigner.status == false
+  ) {
+    Cookies.remove("ADMIN_ACCESS_TOKEN");
+    admin.refetch();
   }
 
   return (

@@ -8,6 +8,17 @@ import Avatar from "react-avatar";
 import getFirebaseImageUrl from "@/shared/utils/getFireBaseImage";
 import { formatDate } from "@/shared/utils/DateTimeHandle";
 import ConfirmPopUp from "@/shared/components/PopUp/ConfirmPopUp";
+import PopUp from "@/shared/components/PopUp/PopUp";
+import XButton from "@/shared/components/Button/XButton";
+
+import { getCustomerOrderListRequest } from "../designer_consultation/api/designerConsultationApi";
+import { Link, useNavigate } from "react-router-dom";
+import Button1 from "@/shared/components/Button/Button1";
+import TextInput from "@/shared/components/Input/TextInput";
+import SelectInput from "@/shared/components/Input/SelectInput";
+import { DateRangePicker } from "react-date-range";
+import { addDays } from "date-fns";
+import { MdOutlineStar } from "react-icons/md";
 
 const Container = styled.div`
   background-color: white;
@@ -17,6 +28,26 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2rem;
+`;
+
+const Note = styled.textarea`
+  padding: 8px;
+  border-radius: 3px;
+  width: 100%;
+  width: 20rem;
+  height: 10rem;
+
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  outline: none;
+  transition: all 0.3s;
+
+  &:focus {
+    border: 1px solid rgba(0, 0, 255, 0.4);
+  }
+
+  &:active {
+    border: 1px solid rgba(0, 0, 255, 0.4);
+  }
 `;
 
 const WaitingContainer = styled.div`
@@ -159,32 +190,127 @@ const HeaderButton = styled.div`
   }}
 `;
 
+const XButtonContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  > svg {
+    transform: translate(100%, -90%);
+    background-color: white;
+
+    &:hover {
+      background-color: white;
+    }
+  }
+`;
+
+const CustomPopUp = styled(PopUp)`
+  margin: 0;
+  padding: 1rem;
+  width: 50rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const SearchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+`;
+
+const FilterBox = styled.div`
+  position: relative;
+  > button {
+    width: max-content;
+  }
+`;
+
+const FilterDropDown = styled.div`
+  margin-top: 5px;
+  background-color: white;
+  position: absolute;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  display: flex;
+  flex-direction: column;
+
+  z-index: 1;
+`;
+
+const bookOptions = [
+  { label: "All", value: "all" },
+  { label: "Pending", value: "pending" },
+  { label: "Accepted", value: "accepted" },
+  { label: "Denied", value: "denied" },
+  { label: "Finished", value: "finished" },
+];
+
+const CustomSelectInput = styled(SelectInput)`
+  width: 15rem;
+`;
+
 export default function AdminConsultationList() {
+  const navigate = useNavigate();
+  const [note, setNote] = useState(false);
+  const [isShowOrderList, setIsShowOrderList] = useState();
+
   const [currentPage, setCurrentPage] = useState(1);
-  const [status, setStatus] = useState("pending");
-  const getAdminConsultation = getAdminConsultationRequest(currentPage, 10, status);
+  const [status, setStatus] = useState(bookOptions[0]);
+  const [search, setSearch] = useState("");
+  const [isReviewPopUp, setIsReviewPopUp] = useState();
+
+  const [date, setDate] = useState([
+    {
+      startDate: null,
+      endDate: null,
+      key: "selection",
+    },
+  ]);
+
+  const getAdminConsultation = getAdminConsultationRequest(currentPage, 10, status.value);
+
   const [approveConfirm, setApproveConfirm] = useState();
   const [denyConfirm, setDenyConfirm] = useState();
+  const [finishConfirm, setFinishConfirm] = useState();
+
+  const [isDropDown, setIsDropDown] = useState(false);
 
   return (
     <>
       <Container>
-        <Header>
-          <HeaderButton $active={status == "pending"} onClick={() => setStatus("pending")}>
-            Pending
-          </HeaderButton>
-          <HeaderButton $active={status == "accepted"} onClick={() => setStatus("accepted")}>
-            Accepted
-          </HeaderButton>
-          <HeaderButton $active={status == "denied"} onClick={() => setStatus("denied")}>
-            Denied
-          </HeaderButton>
-        </Header>
-        {getAdminConsultation.isLoading && (
-          <WaitingContainer>
-            <WaitingIcon />
-          </WaitingContainer>
-        )}
+        <SearchContainer>
+          <FilterBox>
+            <Button1 onClick={() => setIsDropDown((prev) => !prev)}>Filter Option</Button1>
+            {isDropDown && (
+              <FilterDropDown>
+                <div>
+                  <DateRangePicker
+                    onChange={(item) => setDate([item.selection])}
+                    showSelectionPreview={true}
+                    moveRangeOnFirstSelection={false}
+                    months={2}
+                    ranges={date}
+                    direction="horizontal"
+                  />
+                </div>
+                <Button1
+                  onClick={() => {
+                    setDate([
+                      {
+                        startDate: null,
+                        endDate: null,
+                        key: "selection",
+                      },
+                    ]);
+                  }}
+                >
+                  All Date
+                </Button1>
+              </FilterDropDown>
+            )}
+          </FilterBox>
+          <TextInput state={search} setState={setSearch} placeholder={"Search for name, address"} />
+          <CustomSelectInput state={status} setState={setStatus} options={bookOptions} />
+        </SearchContainer>
 
         <TableContent>
           <thead>
@@ -194,6 +320,8 @@ export default function AdminConsultationList() {
               <th>Schedule</th>
               <th>Address</th>
               <th>Note</th>
+              <th>Review</th>
+              <th>Status</th>
             </tr>
           </thead>
 
@@ -221,24 +349,33 @@ export default function AdminConsultationList() {
                         <Avatar
                           round
                           size="60"
-                          name={item.designer.first_name}
+                          name={item.designer.first_name + " " + item.designer.last_name}
                           src={getFirebaseImageUrl(item.designer.avatar)}
                         />
                         <div>
-                          <span>{item.designer.first_name + " " + item.designer.last_name}</span>
-                          <span>Contact {item.designer.contact_number} </span>
+                          <Link to={"/designer_detail?id=" + item.designer.user_id}>
+                            <span>{item.designer.first_name + " " + item.designer.last_name}</span>
+                          </Link>
+                          <span>{item.designer.yearsofexperience} Year of experience </span>
                         </div>
                       </EmailColumn>
                     </td>
-                    <td>{formatDate(item.scheduled_datetime)} </td>
+                    <td>{formatDate(item.scheduled_datetime) + " " + item.time} </td>
                     <td>{item.address}</td>
-                    <td>{item.notes}</td>
+                    <td>
+                      <Button2 onClick={() => setNote(item.notes)}>Show note</Button2>
+                    </td>
+                    <td>
+                      {item.review && (
+                        <Button2 onClick={() => setIsReviewPopUp(item.review)}>Review</Button2>
+                      )}
+                    </td>
+                    <td>{item.status[0].toUpperCase() + item.status.slice(1)}</td>
                   </tr>
                 );
               })}
           </tbody>
         </TableContent>
-
         <Footer>
           {getAdminConsultation.isSuccess && (
             <Pagination
@@ -249,21 +386,105 @@ export default function AdminConsultationList() {
           )}
         </Footer>
       </Container>
-      {approveConfirm && (
-        <ConfirmPopUp
-          cancel={() => setApproveConfirm()}
-          confirm={() => onApprove(approveConfirm)}
-          message={"confirm?"}
-        />
-      )}
 
-      {denyConfirm && (
-        <ConfirmPopUp
-          cancel={() => setDenyConfirm()}
-          confirm={() => onDeny(denyConfirm)}
-          message={"confirm?"}
-        />
+      {note && (
+        <CustomPopUp action={() => {}}>
+          <XButtonContainer>
+            <XButton action={() => setNote()} />
+          </XButtonContainer>
+          <Note>{note}</Note>
+        </CustomPopUp>
       )}
+      {isReviewPopUp && <ReviewPopUp action={() => setIsReviewPopUp()} review={isReviewPopUp} />}
     </>
+  );
+}
+
+const StarContainer = styled.div`
+  display: flex;
+  color: yellow;
+  font-size: 50px;
+`;
+
+const TextArea = styled.textarea`
+  padding: 8px;
+  border-radius: 3px;
+  width: 100%;
+  height: 15rem;
+  resize: none;
+  margin: 0;
+
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  outline: none;
+  transition: all 0.3s;
+`;
+
+function ReviewPopUp({ review, action }) {
+  return (
+    <CustomPopUp action={action}>
+      <StarContainer>
+        {Array.from({ length: review.score }, (_, index) => (
+          <MdOutlineStar />
+        ))}
+      </StarContainer>
+      <TextArea>{review.comment}</TextArea>
+    </CustomPopUp>
+  );
+}
+
+function OrderPopUp({ id, action }) {
+  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const getCustomerOrderList = getCustomerOrderListRequest(currentPage, 10, id);
+
+  return (
+    <CustomPopUp action={action}>
+      <TableContent>
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Total</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          {getCustomerOrderList.isSuccess &&
+            getCustomerOrderList.data.data.map((item, index) => {
+              return (
+                <tr>
+                  <td>
+                    {item.user.userdetails.first_name + " " + item.user.userdetails.last_name}{" "}
+                  </td>
+                  <td>{item.user.userdetails.contact_number}</td>
+                  <td>{item.user.userdetails.address}</td>
+                  <td>{item.total}</td>
+                  <td>{formatDate(item.created_date)}</td>
+                  <td>{item.status}</td>
+                  <td>
+                    <Button2 onClick={() => navigate(`/order_detail?id=${item.id}`)}>
+                      Detail
+                    </Button2>
+                  </td>
+                </tr>
+              );
+            })}
+        </tbody>
+      </TableContent>
+
+      <Footer>
+        {getCustomerOrderList.isSuccess && (
+          <Pagination
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPage={getCustomerOrderList.data.totalPages}
+          />
+        )}
+      </Footer>
+    </CustomPopUp>
   );
 }

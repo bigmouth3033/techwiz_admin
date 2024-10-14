@@ -15,6 +15,7 @@ import Button1 from "@/shared/components/Button/Button1";
 import { updateBlogRequest } from "../api/blogApi";
 import ErrorPopUp from "@/shared/components/PopUp/ErrorPopUp";
 import WaitingPopUp from "@/shared/components/PopUp/WaitingPopUp";
+import CropImagePopUp from "@/shared/components/PopUp/CropImagePopUp";
 
 const Container = styled.div`
   margin: 2rem;
@@ -101,6 +102,7 @@ const ButtonContainer = styled.div`
 `;
 
 export default function Blog() {
+  const [imageCrop, setImageCrop] = useState();
   const imgUploadRef = useRef();
   const admin = adminRequest();
   const location = useLocation();
@@ -199,7 +201,7 @@ export default function Blog() {
         return;
       }
 
-      setImage(ev.target.files[0]);
+      setImageCrop(ev.target.files[0]);
       setImageError(null);
       ev.target.value = null;
     }
@@ -270,6 +272,16 @@ export default function Blog() {
         )}
       </Container>
       {imageError && <ErrorPopUp message={imageError} action={() => setImageError()} />}
+      {imageCrop && (
+        <CropImagePopUp
+          action={() => setImageCrop()}
+          onSuccess={(image) => {
+            setImage(image);
+          }}
+          image={imageCrop}
+          aspect={1.5 / 1}
+        />
+      )}
     </>
   );
 }

@@ -18,6 +18,7 @@ import ConfirmPopUp from "@/shared/components/PopUp/ConfirmPopUp";
 import getWords from "@/shared/utils/getWords";
 import SelectInput from "@/shared/components/Input/SelectInput";
 import { adminRequest } from "@/shared/api/adminApi";
+import { Link } from "react-router-dom";
 
 const Container = styled.div`
   background-color: white;
@@ -311,7 +312,11 @@ export default function ProductList() {
                       <ProductColumn>
                         <Avatar round size="50" src={getFirebaseImageUrl(item.imageName)} />{" "}
                         <div>
-                          <span>{getWords(item.productname, 6)}</span>
+                          <span>
+                            <Link to={"/update_product?id=" + item.id}>
+                              {getWords(item.productname, 6)}
+                            </Link>
+                          </span>
                           <span>{item.variants.length} variants</span>
                         </div>
                       </ProductColumn>

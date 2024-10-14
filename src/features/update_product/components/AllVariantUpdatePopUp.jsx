@@ -101,7 +101,7 @@ const ContentBody = styled.div`
 
 const regex = /^(?=.*\d)\d*(?:\.\d*)?$/;
 
-export default function AllVariantPopUp({ action, state, setState }) {
+export default function AllVariantUpdatePopUp({ action, state, setState }) {
   const [allPrice, setAllPrice] = useState("");
   const [prices, setPrices] = useState(new Array(state.length).fill(""));
   const [fakePrices, setFakePrices] = useState(new Array(state.length).fill(""));
@@ -115,8 +115,8 @@ export default function AllVariantPopUp({ action, state, setState }) {
     }
 
     for (let i = 0; i < prices.length; i++) {
-      state[i].realPrice = prices[i] ? prices[i] : 0;
-      state[i].fakePrice = fakePrices[i] ? fakePrices[i] : 0;
+      state[i].price = prices[i] ? prices[i] : 0;
+      state[i].saleprice = fakePrices[i] ? fakePrices[i] : 0;
     }
 
     setState();
@@ -124,8 +124,8 @@ export default function AllVariantPopUp({ action, state, setState }) {
   };
 
   useEffect(() => {
-    state.forEach((item, index) => (prices[index] = item.realPrice));
-    state.forEach((item, index) => (fakePrices[index] = item.fakePrice));
+    state.forEach((item, index) => (prices[index] = item.price));
+    state.forEach((item, index) => (fakePrices[index] = item.saleprice));
     setPrices([...prices]);
     setFakePrices([...fakePrices]);
   }, []);
@@ -145,7 +145,11 @@ export default function AllVariantPopUp({ action, state, setState }) {
             if (item.selected == true) {
               return (
                 <div key={key}>
-                  <span>{item.variant.join("/")}</span>
+                  <span>
+                    {item.variantattributes
+                      .map((attribute) => attribute.attributevalue)
+                      .join(" / ")}
+                  </span>
                   <TextInput
                     placeholder={0}
                     state={prices[key]}

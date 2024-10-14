@@ -465,18 +465,6 @@ export default function DesignerProfile() {
 
       setCropAvatar(ev.target.files[0]);
 
-      // const formData = new FormData();
-
-      // formData.append("avatar", ev.target.files[0]);
-
-      // updateDesignerAvatar.mutate(formData, {
-      //   onSuccess: (response) => {
-      //     if (response.status == 200) {
-      //       getDesignerProfile.refetch();
-      //       admin.refetch();
-      //     }
-      //   },
-      // });
       setImageError(null);
       ev.target.value = null;
     }

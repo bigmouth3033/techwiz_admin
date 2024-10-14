@@ -432,6 +432,17 @@ export default function DesignerRegister() {
       });
     }
 
+    if (!portfolio) {
+      setErrors((prev) => {
+        return { ...prev, portfolio: "Portfolio cannot be empty" };
+      });
+      isOk = false;
+    } else {
+      setErrors((prev) => {
+        return { ...prev, portfolio: null };
+      });
+    }
+
     if (isOk) {
       const formData = new FormData();
       formData.append("email", email);
@@ -592,6 +603,7 @@ export default function DesignerRegister() {
             {header == "portfolio" && (
               <div>
                 <TextEditor state={portfolio} setState={setPortfolio} />
+                {errors.portfolio && <h5>{errors.portfolio}</h5>}
               </div>
             )}
 

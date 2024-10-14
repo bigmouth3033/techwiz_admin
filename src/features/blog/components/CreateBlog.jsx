@@ -10,6 +10,7 @@ import TextInput from "@/shared/components/Input/TextInput";
 import Button1 from "@/shared/components/Button/Button1";
 import ErrorPopUp from "@/shared/components/PopUp/ErrorPopUp";
 import { adminRequest } from "@/shared/api/adminApi";
+import CropImagePopUp from "@/shared/components/PopUp/CropImagePopUp";
 
 const StyledError = styled.h5`
   font-size: 17px;
@@ -90,6 +91,7 @@ const RightContainer = styled.div`
 `;
 
 export default function CreateBlog() {
+  const [imageCrop, setImageCrop] = useState();
   const admin = adminRequest();
   const imgUploadRef = useRef();
   const [content, setContent] = useState("");
@@ -121,7 +123,7 @@ export default function CreateBlog() {
         return;
       }
 
-      setImgSrc(ev.target.files[0]);
+      setImageCrop(ev.target.files[0]);
       setImageError(null);
       ev.target.value = null;
     }
@@ -237,6 +239,16 @@ export default function CreateBlog() {
         </RightContainer>
       </StyledContainer>
       {imageError && <ErrorPopUp message={imageError} action={() => setImageError()} />}
+      {imageCrop && (
+        <CropImagePopUp
+          action={() => setImageCrop()}
+          onSuccess={(image) => {
+            setImgSrc(image);
+          }}
+          image={imageCrop}
+          aspect={1.5 / 1}
+        />
+      )}
     </>
   );
 }
