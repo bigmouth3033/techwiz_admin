@@ -238,6 +238,30 @@ const FilterDropDown = styled.div`
   z-index: 1;
 `;
 
+const StatusColor = styled.span`
+  font-weight: 900;
+  font-size: 17px;
+  ${(props) => {
+    if (props.$status == "pending") {
+      return css`
+        color: #d24e2b;
+      `;
+    }
+
+    if (props.$status == "finished") {
+      return css`
+        color: #077e8c;
+      `;
+    }
+
+    if (props.$status == "accepted") {
+      return css`
+        color: #f7cb73;
+      `;
+    }
+  }}
+`;
+
 const bookOptions = [
   { label: "All", value: "all" },
   { label: "Pending", value: "pending" },
@@ -390,12 +414,14 @@ export default function DesignerConsultation() {
                   <tr key={index}>
                     <td>
                       <EmailColumn>
-                        <Avatar
-                          round
-                          size="60"
-                          name={item.customer.first_name}
-                          src={getFirebaseImageUrl(item.customer.avatar)}
-                        />
+                        <div>
+                          <Avatar
+                            round
+                            size="60"
+                            name={item.customer.first_name}
+                            src={getFirebaseImageUrl(item.customer.avatar)}
+                          />
+                        </div>
                         <div>
                           <span>{item.customer.first_name + " " + item.customer.last_name}</span>
                           <span>Contact {item.customer.contact_number} </span>
@@ -412,7 +438,11 @@ export default function DesignerConsultation() {
                         <Button2 onClick={() => setIsReviewPopUp(item.review)}>Review</Button2>
                       )}
                     </td>
-                    <td>{item.status[0].toUpperCase() + item.status.slice(1)}</td>
+                    <td>
+                      <StatusColor $status={item.status}>
+                        {item.status[0].toUpperCase() + item.status.slice(1)}
+                      </StatusColor>
+                    </td>
                     {(status.value == "pending" ||
                       (status.value == "all" && item.status == "pending")) && (
                       <td>

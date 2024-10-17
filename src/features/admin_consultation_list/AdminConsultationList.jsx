@@ -236,6 +236,30 @@ const FilterDropDown = styled.div`
   z-index: 1;
 `;
 
+const StatusColor = styled.span`
+  font-weight: 900;
+  font-size: 17px;
+  ${(props) => {
+    if (props.$status == "pending") {
+      return css`
+        color: #d24e2b;
+      `;
+    }
+
+    if (props.$status == "finished") {
+      return css`
+        color: #077e8c;
+      `;
+    }
+
+    if (props.$status == "accepted") {
+      return css`
+        color: #f7cb73;
+      `;
+    }
+  }}
+`;
+
 const bookOptions = [
   { label: "All", value: "all" },
   { label: "Pending", value: "pending" },
@@ -370,7 +394,11 @@ export default function AdminConsultationList() {
                         <Button2 onClick={() => setIsReviewPopUp(item.review)}>Review</Button2>
                       )}
                     </td>
-                    <td>{item.status[0].toUpperCase() + item.status.slice(1)}</td>
+                    <td>
+                      <StatusColor $status={item.status}>
+                        {item.status[0].toUpperCase() + item.status.slice(1)}
+                      </StatusColor>
+                    </td>
                   </tr>
                 );
               })}

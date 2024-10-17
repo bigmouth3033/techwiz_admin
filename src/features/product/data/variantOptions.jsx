@@ -1,5 +1,5 @@
 const variantOptions = [
-  { label: "Color", value: "Color" },
+  { label: "Colors", value: "Colors" },
   { label: "Size", value: "Size" },
   { label: "Material", value: "Material" },
 ];
