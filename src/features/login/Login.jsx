@@ -156,6 +156,11 @@ export default function Login() {
             return;
           }
 
+          if (response.status == 401) {
+            setIsNotActive(response.message);
+            return;
+          }
+
           if (response.status == 404) {
             setIsWrongAccount(true);
             return;

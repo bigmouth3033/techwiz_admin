@@ -3,12 +3,12 @@ import styled, { css } from "styled-components";
 import Avatar from "react-avatar";
 import { adminRequest } from "@/shared/api/adminApi";
 import getFirebaseImageUrl from "@/shared/utils/getFireBaseImage";
-import NewStoryPopUp from "./components/NewStoryPopUp";
-import { getDesignerStoryRequest } from "./api/designerStoryApi";
+import NewStoryPopUp from "../designer_stories/components/NewStoryPopUp";
+import { getAdminStoryRequest } from "./api/adminStoryApi";
 import Pagination from "@/shared/components/Pagination/pagination";
 import { formatDate } from "@/shared/utils/DateTimeHandle";
 import getWords from "@/shared/utils/getWords";
-import UpdateStoryPopUp from "./components/UpdateStoryPopUp";
+import StoryPopUp from "./components/StoryPopUp";
 import "react-date-range/dist/styles.css"; // main css file
 import "react-date-range/dist/theme/default.css"; // theme css file
 import { DateRangePicker } from "react-date-range";
@@ -16,7 +16,9 @@ import { DateRange } from "react-date-range";
 import { addDays } from "date-fns";
 import { DefinedRange } from "react-date-range";
 import Button1 from "@/shared/components/Button/Button1";
+import TextInput from "@/shared/components/Input/TextInput";
 import SelectInput from "@/shared/components/Input/SelectInput";
+import { changeStoryStatusRequest } from "./api/adminStoryApi";
 
 const Container = styled.div`
   margin: 2rem;
@@ -50,7 +52,7 @@ const NewButton = styled.div`
 const RightContainer = styled.div`
   > div {
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
-    background-color: white;
+
     position: sticky;
     top: 5rem;
   }
@@ -95,10 +97,6 @@ const StoryItem = styled.div`
 
   > div:nth-of-type(2) {
     padding: 0 1rem;
-  }
-
-  & span {
-    color: red;
   }
 `;
 
@@ -157,6 +155,7 @@ const ImageContainer = styled.div`
 const DateFilter = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 5px;
 
   ${(props) => {
     if (props.$all) {
@@ -169,18 +168,50 @@ const DateFilter = styled.div`
   }}
 `;
 
+const Designer = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+
+  > div:nth-of-type(2) {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    p {
+      margin: 0;
+      padding: 0;
+    }
+
+    > p:nth-of-type(2) {
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  & span {
+    color: red;
+  }
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
 const statusOptions = [
   { label: "All", value: "All" },
   { label: "Active", value: "true" },
   { label: "Unactive", value: "false" },
 ];
 
-export default function DesignerStories() {
+export default function AdminStory() {
   const [chosenUpdate, setChosenUpdate] = useState();
   const [currentPage, setCurrentPage] = useState(1);
   const admin = adminRequest();
   const [newStory, setNewStory] = useState(false);
+  const [search, setSearch] = useState("");
   const [status, setStatus] = useState(statusOptions[0]);
+  const changeStoryStatus = changeStoryStatusRequest();
 
   const current = new Date();
 
@@ -192,36 +223,54 @@ export default function DesignerStories() {
     },
   ]);
 
-  const getDesignerStory = getDesignerStoryRequest(
-    admin.data.data.interiordesigner.id,
-    currentPage,
-    10,
-    date[0],
-    status.value
-  );
+  const getStory = getAdminStoryRequest(currentPage, 10, date[0], status.value, search);
+
+  const onChangeStoryStatus = (storyId) => {
+    const formData = new FormData();
+    formData.append("storyId", storyId);
+
+    changeStoryStatus.mutate(formData, {
+      onSuccess: (response) => {
+        if (response.status == 200) {
+          getStory.refetch();
+        }
+      },
+    });
+  };
 
   return (
     <>
       <Container>
         <LeftContainer>
-          <NewStoryContainer>
-            <Avatar
-              size="50"
-              round
-              src={getFirebaseImageUrl(admin.data.data.interiordesigner.avatar)}
-            />
-            <NewButton onClick={() => setNewStory(true)}>What is your new story?</NewButton>
-          </NewStoryContainer>
           <StoryContainer>
-            {getDesignerStory.isSuccess &&
-              getDesignerStory.data.data.map((story, index) => {
+            {getStory.isSuccess &&
+              getStory.data.data.map((story, index) => {
                 const images = story.image.split("; ").filter((image) => image.length != 0);
                 return (
                   <StoryItem key={index}>
-                    <div>
-                      {formatDate(story.created_at)} -{" "}
-                      <span>{!story.status ? "Unactive" : "Active"}</span>
-                    </div>
+                    <Header>
+                      <Designer>
+                        <div>
+                          <Avatar
+                            size="60"
+                            round
+                            src={getFirebaseImageUrl(story.interior_designer.avatar)}
+                          />
+                        </div>
+                        <div>
+                          <p>
+                            {story.interior_designer.first_name} {story.interior_designer.last_name}{" "}
+                            - <span>{!story.status ? "Unactive" : "Active"}</span>
+                          </p>
+                          <p>{formatDate(story.created_at)}</p>
+                        </div>
+                      </Designer>
+                      <div>
+                        <Button1 onClick={() => onChangeStoryStatus(story.id)}>
+                          {story.status ? "Deactivate" : "Activate"}
+                        </Button1>
+                      </div>
+                    </Header>
                     <div>
                       {getWords(story.content, 30)}{" "}
                       <button onClick={() => setChosenUpdate(story)}>See more</button>
@@ -240,13 +289,12 @@ export default function DesignerStories() {
                 );
               })}
           </StoryContainer>
-
           <Footer>
-            {getDesignerStory.isSuccess && (
+            {getStory.isSuccess && (
               <Pagination
                 currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
-                totalPage={getDesignerStory.data.totalPages}
+                totalPage={getStory.data.totalPages}
               />
             )}
           </Footer>
@@ -254,6 +302,11 @@ export default function DesignerStories() {
         <RightContainer>
           <DateFilter $all={date[0].startDate != null && date[0].endDate != null ? false : true}>
             <SelectInput options={statusOptions} state={status} setState={setStatus} />
+            <TextInput
+              placeholder={"Search for designer name, email"}
+              state={search}
+              setState={setSearch}
+            />
             <DateRange
               editableDateInputs={true}
               onChange={(item) => setDate([item.selection])}
@@ -281,15 +334,15 @@ export default function DesignerStories() {
       {newStory && (
         <NewStoryPopUp
           action={() => {
-            getDesignerStory.refetch();
+            getStory.refetch();
             setNewStory();
           }}
         />
       )}
       {chosenUpdate && (
-        <UpdateStoryPopUp
+        <StoryPopUp
           action={() => {
-            getDesignerStory.refetch();
+            getStory.refetch();
             setChosenUpdate();
           }}
           story={chosenUpdate}

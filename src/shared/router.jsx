@@ -30,8 +30,8 @@ import DesignerGalleries from "@/features/designer_galleries/DesignerGalleries";
 import DesignerStories from "@/features/designer_stories/DesignerStories";
 import AdminNotification from "@/features/admin_notification/AdminNotification";
 import UpdateProduct from "@/features/update_product/UpdateProduct";
-import c from "@/features/designer_notification/DesignerNotification";
 import DesignerNotification from "@/features/designer_notification/DesignerNotification";
+import AdminStory from "@/features/admin_story/AdminStory";
 
 const router = createBrowserRouter(
   [
@@ -146,6 +146,10 @@ const router = createBrowserRouter(
         {
           path: "/update_product",
           element: <UpdateProduct />,
+        },
+        {
+          path: "/admin_story",
+          element: <AdminStory />,
         },
       ],
     },

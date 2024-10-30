@@ -179,6 +179,13 @@ const sidebar_content = [
     role: "designer",
     link: "/designer_notification",
   },
+  {
+    name: "Stories",
+    type: "button",
+    icon: <FaBookOpenReader />,
+    link: "/admin_story",
+    role: "admin",
+  },
 ];
 
 export default sidebar_content;

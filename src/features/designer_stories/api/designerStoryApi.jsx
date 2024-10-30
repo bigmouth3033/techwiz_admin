@@ -12,8 +12,8 @@ export const createNewStoryRequest = () => {
   });
 };
 
-export const getDesignerStoryRequest = (designer_id, pageNumber, pageSize, date) => {
-  const request = async (designer_id, pageNumber, pageSize, date) => {
+export const getDesignerStoryRequest = (designer_id, pageNumber, pageSize, date, status) => {
+  const request = async (designer_id, pageNumber, pageSize, date, status) => {
     const response = await axiosAdmin.get("StoryAdmin/get_designer_story", {
       params: {
         designer_id,
@@ -27,6 +27,7 @@ export const getDesignerStoryRequest = (designer_id, pageNumber, pageSize, date)
         to: date.endDate
           ? `${date.endDate.getFullYear()}-${date.endDate.getMonth() + 1}-${date.endDate.getDate()}`
           : null,
+        status,
       },
     });
 
@@ -34,8 +35,8 @@ export const getDesignerStoryRequest = (designer_id, pageNumber, pageSize, date)
   };
 
   return useQuery({
-    queryKey: ["designer_story", designer_id, pageNumber, pageSize, date],
-    queryFn: () => request(designer_id, pageNumber, pageSize, date),
+    queryKey: ["designer_story", designer_id, pageNumber, pageSize, date, status],
+    queryFn: () => request(designer_id, pageNumber, pageSize, date, status),
   });
 };
 
